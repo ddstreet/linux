@@ -791,6 +791,7 @@ EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtl8192c/rtl8192c-common 0xf9d2fc75	r
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtl8192c/rtl8192c-common 0xfdf87383	rtl92c_dm_init
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x11f67d9e	rtl_efuse_shadow_map_update
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x1b23a422	efuse_read_1byte
+EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x27fbb1ab	rtl_usb_probe
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x2f41aa3c	rtl_cam_empty_entry
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x37952bd7	rtl_cam_delete_one_entry
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x5beba6d9	rtl_usb_resume
@@ -801,7 +802,6 @@ EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x707ca8bd	rtl_cam_del_entry
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xae847bd4	rtl_usb_suspend
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xb2d40752	rtl_ps_enable_nic
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xbab0b8c4	rtl_usb_disconnect
-EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xca515465	rtl_usb_probe
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xd910ce16	rtl_get_tcb_desc
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xe24f68eb	rtl_ps_disable_nic
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xe335fc09	rtlwifi_rate_mapping
@@ -873,9 +873,10 @@ EXPORT_SYMBOL drivers/pcmcia/pcmcia_core 0xcf97f3bd	dead_socket
 EXPORT_SYMBOL drivers/pcmcia/pcmcia_core 0xd6b6d17d	pcmcia_socket_class
 EXPORT_SYMBOL drivers/pcmcia/pcmcia_core 0xda7e93ca	pcmcia_register_socket
 EXPORT_SYMBOL drivers/pcmcia/pcmcia_rsrc 0x5b8a4cbc	pccard_static_ops
-EXPORT_SYMBOL drivers/pps/pps_core 0x3328126d	pps_register_source
-EXPORT_SYMBOL drivers/pps/pps_core 0x3c954b99	pps_event
-EXPORT_SYMBOL drivers/pps/pps_core 0x697a196f	pps_unregister_source
+EXPORT_SYMBOL drivers/pps/pps_core 0x504baded	pps_unregister_source
+EXPORT_SYMBOL drivers/pps/pps_core 0x832e3fad	pps_register_source
+EXPORT_SYMBOL drivers/pps/pps_core 0x87b369ce	pps_lookup_dev
+EXPORT_SYMBOL drivers/pps/pps_core 0xe0715f3d	pps_event
 EXPORT_SYMBOL drivers/scsi/fcoe/libfcoe 0x13fe4239	fcoe_ctlr_link_down
 EXPORT_SYMBOL drivers/scsi/fcoe/libfcoe 0x1866807a	fcoe_transport_detach
 EXPORT_SYMBOL drivers/scsi/fcoe/libfcoe 0x1d207033	fcoe_transport_attach
@@ -2025,6 +2026,7 @@ EXPORT_SYMBOL vmlinux 0x0521b2ee	set_current_groups
 EXPORT_SYMBOL vmlinux 0x05240ee7	percpu_counter_batch
 EXPORT_SYMBOL vmlinux 0x054434d6	radix_tree_tag_set
 EXPORT_SYMBOL vmlinux 0x0550a7ce	clear_page_dirty_for_io
+EXPORT_SYMBOL vmlinux 0x056ee730	ipv6_hash_secret
 EXPORT_SYMBOL vmlinux 0x05752ce6	dev_uc_init
 EXPORT_SYMBOL vmlinux 0x057ce975	hex_dump_to_buffer
 EXPORT_SYMBOL vmlinux 0x0583b1a3	irq_set_chip
@@ -6176,6 +6178,7 @@ EXPORT_SYMBOL vmlinux 0xf4f14de6	rtnl_trylock
 EXPORT_SYMBOL vmlinux 0xf5077712	tiler_reserve
 EXPORT_SYMBOL vmlinux 0xf5167333	dma_map_sg
 EXPORT_SYMBOL vmlinux 0xf519deed	snd_dma_alloc_pages_fallback
+EXPORT_SYMBOL vmlinux 0xf52945d5	kill_bdev
 EXPORT_SYMBOL vmlinux 0xf536a389	nameserver_create
 EXPORT_SYMBOL vmlinux 0xf53d4c26	qdisc_class_hash_destroy
 EXPORT_SYMBOL vmlinux 0xf54ba601	omap_mcbsp_config
@@ -8511,6 +8514,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x381d87c8	twl6040_hs_jack_detect
 EXPORT_SYMBOL_GPL vmlinux 0x3831a4f2	abe_dsp_pm_get
 EXPORT_SYMBOL_GPL vmlinux 0x38369429	xv_get_total_size_bytes
 EXPORT_SYMBOL_GPL vmlinux 0x384a4731	drm_class_device_register
+EXPORT_SYMBOL_GPL vmlinux 0x386b341b	pstore_cannot_block_path
 EXPORT_SYMBOL_GPL vmlinux 0x38709ea2	ata_bmdma_start
 EXPORT_SYMBOL_GPL vmlinux 0x3896d9fd	da903x_reads
 EXPORT_SYMBOL_GPL vmlinux 0x38a0cf5d	usb_ifnum_to_if
@@ -9748,6 +9752,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xc2da67e8	ata_sas_port_start
 EXPORT_SYMBOL_GPL vmlinux 0xc2e1fadc	sdio_get_host_pm_caps
 EXPORT_SYMBOL_GPL vmlinux 0xc2f04414	fat_dir_empty
 EXPORT_SYMBOL_GPL vmlinux 0xc30b34f7	srcu_notifier_chain_unregister
+EXPORT_SYMBOL_GPL vmlinux 0xc329b66c	do_unregister_con_driver
 EXPORT_SYMBOL_GPL vmlinux 0xc33ffb9d	blk_trace_remove
 EXPORT_SYMBOL_GPL vmlinux 0xc3407254	usbnet_resume
 EXPORT_SYMBOL_GPL vmlinux 0xc34efe27	snmp_fold_field
@@ -9972,6 +9977,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xdb1e9caa	tracepoint_iter_next
 EXPORT_SYMBOL_GPL vmlinux 0xdb274e52	monotonic_to_bootbased
 EXPORT_SYMBOL_GPL vmlinux 0xdb4b8934	usb_hcd_giveback_urb
 EXPORT_SYMBOL_GPL vmlinux 0xdb5d34e0	rcu_batches_completed_preempt
+EXPORT_SYMBOL_GPL vmlinux 0xdb75792c	do_take_over_console
 EXPORT_SYMBOL_GPL vmlinux 0xdba95fd5	reserve_pmu
 EXPORT_SYMBOL_GPL vmlinux 0xdbad0999	platform_driver_probe
 EXPORT_SYMBOL_GPL vmlinux 0xdc0b1d0e	snd_soc_info_enum_ext
