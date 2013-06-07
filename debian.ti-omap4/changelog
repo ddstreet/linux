@@ -1,3 +1,14 @@
+linux-ti-omap4 (3.2.0-1433.44) precise; urgency=low
+
+  * Release Tracking Bug
+    - LP: #1188464
+
+  [ Brad Figg ]
+
+  * UBUNTU: Fixup missing abi files causing FTBS
+
+ -- Brad Figg <brad.figg@canonical.com>  Fri, 07 Jun 2013 14:50:17 -0700
+
 linux-ti-omap4 (3.2.0-1433.43) precise; urgency=low
 
   * Release Tracking Bug
