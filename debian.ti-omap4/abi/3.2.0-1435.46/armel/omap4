@@ -5527,6 +5527,7 @@ EXPORT_SYMBOL vmlinux 0xcf8b07df	bd_set_size
 EXPORT_SYMBOL vmlinux 0xcf9f5b39	fb_validate_mode
 EXPORT_SYMBOL vmlinux 0xcfa93960	bmap
 EXPORT_SYMBOL vmlinux 0xcfb9006e	jiffies_to_timeval
+EXPORT_SYMBOL vmlinux 0xcfd7db52	flush_kernel_dcache_page
 EXPORT_SYMBOL vmlinux 0xcfeb0be9	rb_augment_erase_begin
 EXPORT_SYMBOL vmlinux 0xd00928ed	__bread
 EXPORT_SYMBOL vmlinux 0xd00ff00b	abe_write_asrc
@@ -8290,6 +8291,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x1c63d2e1	cgroup_to_blkio_cgroup
 EXPORT_SYMBOL_GPL vmlinux 0x1c852e7c	xfrm_calg_get_byid
 EXPORT_SYMBOL_GPL vmlinux 0x1c87a811	__round_jiffies_up
 EXPORT_SYMBOL_GPL vmlinux 0x1cb7a3a4	da903x_read
+EXPORT_SYMBOL_GPL vmlinux 0x1cbaa72b	cpu_topology
 EXPORT_SYMBOL_GPL vmlinux 0x1ccecdc6	device_del
 EXPORT_SYMBOL_GPL vmlinux 0x1cdc7597	task_blkio_cgroup
 EXPORT_SYMBOL_GPL vmlinux 0x1cf548bc	power_supply_changed
