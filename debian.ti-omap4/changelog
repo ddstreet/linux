@@ -4,6 +4,23 @@ linux-ti-omap4 (3.2.0-1436.47) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.2.0-52.78 ]
+
+  * Release Tracking Bug
+    - LP: #1205381
+  * Input: elantech - fix for newer hardware versions (v7)
+    - LP: #1166442
+  * fanotify: info leak in copy_event_to_user()
+    - LP: #1188356
+    - CVE-2013-2148
+
+  [ Ubuntu: 3.2.0-51.77 ]
+
+  * Release Tracking Bug
+    - LP: #1199470
+  * Bluetooth: Fix invalid length check in l2cap_information_rsp()
+    - LP: #1204548
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Thu, 01 Aug 2013 09:30:26 +0100
 
 linux-ti-omap4 (3.2.0-1435.46) precise; urgency=low
