@@ -1,4 +1,4 @@
-linux-ti-omap4 (3.2.0-1436.47) precise; urgency=low
+linux-ti-omap4 (3.2.0-1436.54) precise; urgency=low
 
   * Release Tracking Bug
     - LP: #1205540
