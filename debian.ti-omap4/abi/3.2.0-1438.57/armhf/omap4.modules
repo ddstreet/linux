@@ -219,7 +219,6 @@ bfs
 bfusb
 bh1770glc
 bh1780gli
-binfmt_aout
 block2mtd
 blowfish_common
 blowfish_generic
