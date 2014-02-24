@@ -156,6 +156,7 @@ firmware:       ti_5052.fw
 firmware:       ti-connectivity/wl127x-fw-3.bin
 firmware:       ti-connectivity/wl128x-fw-3.bin
 firmware:       usb8388.bin
+firmware:       vntwusb.fw
 firmware:       vx/bd56002.boot
 firmware:       vx/bd563s3.boot
 firmware:       vx/bd563v2.boot
