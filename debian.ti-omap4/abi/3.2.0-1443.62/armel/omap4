@@ -790,11 +790,11 @@ EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtl8192c/rtl8192c-common 0xe2e1f37f	r
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtl8192c/rtl8192c-common 0xfca24237	rtl8192_phy_check_is_legal_rfpath
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtl8192c/rtl8192c-common 0xffad4863	rtl92c_phy_set_txpower_level
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x14e50c3e	rtl_cam_empty_entry
-EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x460356e8	rtl_get_tcb_desc
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x4883ed77	rtl_usb_probe
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x5f7d9265	rtl_usb_resume
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x6cefd31c	rtl_cam_add_one_entry
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x78f2868a	rtl_ps_disable_nic
+EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x7a765943	rtl_get_tcb_desc
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0x964e6cfe	rtl_ps_set_rf_state
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xa2510124	rtl_efuse_shadow_map_update
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xa61be45e	efuse_read_1byte
@@ -803,9 +803,9 @@ EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xc04354b6	rtl_cam_del_entry
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xc1e2c54d	rtl_usb_disconnect
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xcd58a7b3	rtl_cam_get_free_entry
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xe0854d25	rtl_cam_mark_invalid
+EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xee0e34a5	rtlwifi_rate_mapping
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xee7ef018	rtl_usb_suspend
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xf084b95f	rtl_ps_enable_nic
-EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xf0e2cb03	rtlwifi_rate_mapping
 EXPORT_SYMBOL drivers/net/wireless/rtlwifi/rtlwifi 0xf78a19ea	rtl_cam_reset_all_entry
 EXPORT_SYMBOL drivers/parport/parport 0x056dfd58	parport_negotiate
 EXPORT_SYMBOL drivers/parport/parport 0x1698c164	parport_ieee1284_ecp_write_data
