@@ -122,8 +122,6 @@
 
 		i2c@11000 {
 			status = "okay";
-<<<<<<< HEAD
-=======
 
 			alc5621: alc5621@1a {
 				compatible = "realtek,alc5621";
@@ -132,7 +130,6 @@
 				add-ctrl = <0x3700>;
 				jack-det-ctrl = <0x4810>;
 			};
->>>>>>> linux-next/akpm-base
 		};
 
 		serial@12000 {

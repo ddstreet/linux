@@ -75,13 +75,10 @@
 		serial@12000 {
 			status = "okay";
 		};
-<<<<<<< HEAD
-=======
 
 		ehci@50000 {
 			status = "okay";
 		};
->>>>>>> linux-next/akpm-base
 	};
 
 	gpio-leds {
