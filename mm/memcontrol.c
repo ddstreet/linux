@@ -4034,7 +4034,7 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
 }
 
 /*
- * Batch_start/batch_end is called in unmap_page_range/invlidate/trucate.
+ * Batch_start/batch_end is called in unmap_page_range/invalidate/truncate.
  * In that cases, pages are freed continuously and we can expect pages
  * are in the same memcg. All these calls itself limits the number of
  * pages freed at once, then uncharge_start/end() is called properly.
