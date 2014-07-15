@@ -9201,6 +9201,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x7e8e42f5	pm_generic_runtime_suspend
 EXPORT_SYMBOL_GPL vmlinux 0x7ed68941	asic3_read_register
 EXPORT_SYMBOL_GPL vmlinux 0x7eeafe6b	__rt_mutex_init
 EXPORT_SYMBOL_GPL vmlinux 0x7f1efc93	irq_setup_alt_chip
+EXPORT_SYMBOL_GPL vmlinux 0x7f282736	skb_copy_ubufs
 EXPORT_SYMBOL_GPL vmlinux 0x7f6665c0	rtc_initialize_alarm
 EXPORT_SYMBOL_GPL vmlinux 0x7f696a87	sysdev_create_file
 EXPORT_SYMBOL_GPL vmlinux 0x7fd38778	armpmu_get_max_events
