@@ -441,6 +441,26 @@ nfsd3_proc_readdir(struct svc_rqst *rqstp, struct nfsd3_readdirargs *argp,
 	RETURN_STATUS(nfserr);
 }
 
+static int
+nfsd3_is_readdirplus_supported(struct svc_rqst *rqstp, struct svc_fh *fhp)
+{
+	struct svc_export *exp;
+	int supported = 1; /* fall back to readdirplus supported in case of errors.*/
+	int err;
+
+	err = fh_verify(rqstp, fhp, S_IFDIR, NFSD_MAY_READ);
+	if (err) {
+		goto out;
+	}
+
+	exp = fhp->fh_export;
+	if (exp->ex_flags & NFSEXP_NOREADDIRPLUS) {
+		supported = 0;
+	}
+out:
+	return supported;
+}
+
 /*
  * Read a portion of a directory, including file handles and attrs.
  * For now, we choose to ignore the dircount parameter.
@@ -471,10 +491,16 @@ nfsd3_proc_readdirplus(struct svc_rqst *rqstp, struct nfsd3_readdirargs *argp,
 	resp->buflen = resp->count;
 	resp->rqstp = rqstp;
 	offset = argp->cookie;
-	nfserr = nfsd_readdir(rqstp, &resp->fh,
-				     &offset,
-				     &resp->common,
-				     nfs3svc_encode_entry_plus);
+
+	if (nfsd3_is_readdirplus_supported(rqstp, &resp->fh)) {
+		nfserr = nfsd_readdir(rqstp, &resp->fh,
+				&offset,
+				&resp->common,
+				nfs3svc_encode_entry_plus);
+	} else {
+		nfserr = nfserrno(-EOPNOTSUPP);
+	}
+
 	memcpy(resp->verf, argp->verf, 8);
 	for (p = rqstp->rq_respages + 1; p < rqstp->rq_next_page; p++) {
 		page_addr = page_address(*p);
