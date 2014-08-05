@@ -157,11 +157,7 @@ nfsd3_proc_read(struct svc_rqst *rqstp, struct nfsd3_readargs *argp,
 	 * 1 (status) + 22 (post_op_attr) + 1 (count) + 1 (eof)
 	 * + 1 (xdr opaque byte count) = 26
 	 */
-
-	resp->count = argp->count;
-	if (max_blocksize < resp->count)
-		resp->count = max_blocksize;
-
+	resp->count = min(argp->count, max_blocksize);
 	svc_reserve_auth(rqstp, ((1 + NFS3_POST_OP_ATTR_WORDS + 3)<<2) + resp->count +4);
 
 	fh_copy(&resp->fh, &argp->fh);
@@ -286,8 +282,7 @@ nfsd3_proc_symlink(struct svc_rqst *rqstp, struct nfsd3_symlinkargs *argp,
 	fh_copy(&resp->dirfh, &argp->ffh);
 	fh_init(&resp->fh, NFS3_FHSIZE);
 	nfserr = nfsd_symlink(rqstp, &resp->dirfh, argp->fname, argp->flen,
-						   argp->tname, argp->tlen,
-						   &resp->fh, &argp->attrs);
+						   argp->tname, &resp->fh);
 	RETURN_STATUS(nfserr);
 }
 
@@ -446,6 +441,26 @@ nfsd3_proc_readdir(struct svc_rqst *rqstp, struct nfsd3_readdirargs *argp,
 	RETURN_STATUS(nfserr);
 }
 
+static int
+nfsd3_is_readdirplus_supported(struct svc_rqst *rqstp, struct svc_fh *fhp)
+{
+	struct svc_export *exp;
+	int supported = 1; /* fall back to readdirplus supported in case of errors.*/
+	int err;
+
+	err = fh_verify(rqstp, fhp, S_IFDIR, NFSD_MAY_READ);
+	if (err) {
+		goto out;
+	}
+
+	exp = fhp->fh_export;
+	if (exp->ex_flags & NFSEXP_NOREADDIRPLUS) {
+		supported = 0;
+	}
+out:
+	return supported;
+}
+
 /*
  * Read a portion of a directory, including file handles and attrs.
  * For now, we choose to ignore the dircount parameter.
@@ -476,10 +491,16 @@ nfsd3_proc_readdirplus(struct svc_rqst *rqstp, struct nfsd3_readdirargs *argp,
 	resp->buflen = resp->count;
 	resp->rqstp = rqstp;
 	offset = argp->cookie;
-	nfserr = nfsd_readdir(rqstp, &resp->fh,
-				     &offset,
-				     &resp->common,
-				     nfs3svc_encode_entry_plus);
+
+	if (nfsd3_is_readdirplus_supported(rqstp, &resp->fh)) {
+		nfserr = nfsd_readdir(rqstp, &resp->fh,
+				&offset,
+				&resp->common,
+				nfs3svc_encode_entry_plus);
+	} else {
+		nfserr = nfserrno(-EOPNOTSUPP);
+	}
+
 	memcpy(resp->verf, argp->verf, 8);
 	for (p = rqstp->rq_respages + 1; p < rqstp->rq_next_page; p++) {
 		page_addr = page_address(*p);
