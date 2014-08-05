@@ -1388,7 +1388,8 @@ static void valleyview_update_wm(struct drm_crtc *crtc)
 		plane_sr = cursor_sr = 0;
 	}
 
-	DRM_DEBUG_KMS("Setting FIFO watermarks - A: plane=%d, cursor=%d, B: plane=%d, cursor=%d, SR: plane=%d, cursor=%d\n",
+	DRM_DEBUG_KMS("Setting FIFO watermarks - A: plane=%d, cursor=%d, "
+		      "B: plane=%d, cursor=%d, SR: plane=%d, cursor=%d\n",
 		      planea_wm, cursora_wm,
 		      planeb_wm, cursorb_wm,
 		      plane_sr, cursor_sr);
@@ -1444,7 +1445,8 @@ static void g4x_update_wm(struct drm_crtc *crtc)
 		plane_sr = cursor_sr = 0;
 	}
 
-	DRM_DEBUG_KMS("Setting FIFO watermarks - A: plane=%d, cursor=%d, B: plane=%d, cursor=%d, SR: plane=%d, cursor=%d\n",
+	DRM_DEBUG_KMS("Setting FIFO watermarks - A: plane=%d, cursor=%d, "
+		      "B: plane=%d, cursor=%d, SR: plane=%d, cursor=%d\n",
 		      planea_wm, cursora_wm,
 		      planeb_wm, cursorb_wm,
 		      plane_sr, cursor_sr);
@@ -6257,6 +6259,153 @@ static void vlv_dpio_cmn_power_well_disable(struct drm_i915_private *dev_priv,
 	vlv_set_power_well(dev_priv, power_well, false);
 }
 
+static void chv_dpio_cmn_power_well_enable(struct drm_i915_private *dev_priv,
+					   struct i915_power_well *power_well)
+{
+	enum dpio_phy phy;
+
+	WARN_ON_ONCE(power_well->data != PUNIT_POWER_WELL_DPIO_CMN_BC &&
+		     power_well->data != PUNIT_POWER_WELL_DPIO_CMN_D);
+
+	/*
+	 * Enable the CRI clock source so we can get at the
+	 * display and the reference clock for VGA
+	 * hotplug / manual detection.
+	 */
+	if (power_well->data == PUNIT_POWER_WELL_DPIO_CMN_BC) {
+		phy = DPIO_PHY0;
+		I915_WRITE(DPLL(PIPE_B), I915_READ(DPLL(PIPE_B)) |
+			   DPLL_REFA_CLK_ENABLE_VLV);
+		I915_WRITE(DPLL(PIPE_B), I915_READ(DPLL(PIPE_B)) |
+			   DPLL_REFA_CLK_ENABLE_VLV | DPLL_INTEGRATED_CRI_CLK_VLV);
+	} else {
+		phy = DPIO_PHY1;
+		I915_WRITE(DPLL(PIPE_C), I915_READ(DPLL(PIPE_C)) |
+			   DPLL_REFA_CLK_ENABLE_VLV | DPLL_INTEGRATED_CRI_CLK_VLV);
+	}
+	udelay(1); /* >10ns for cmnreset, >0ns for sidereset */
+	vlv_set_power_well(dev_priv, power_well, true);
+
+	/* Poll for phypwrgood signal */
+	if (wait_for(I915_READ(DISPLAY_PHY_STATUS) & PHY_POWERGOOD(phy), 1))
+		DRM_ERROR("Display PHY %d is not power up\n", phy);
+
+	I915_WRITE(DISPLAY_PHY_CONTROL,
+		   PHY_COM_LANE_RESET_DEASSERT(phy, I915_READ(DISPLAY_PHY_CONTROL)));
+}
+
+static void chv_dpio_cmn_power_well_disable(struct drm_i915_private *dev_priv,
+					    struct i915_power_well *power_well)
+{
+	enum dpio_phy phy;
+
+	WARN_ON_ONCE(power_well->data != PUNIT_POWER_WELL_DPIO_CMN_BC &&
+		     power_well->data != PUNIT_POWER_WELL_DPIO_CMN_D);
+
+	if (power_well->data == PUNIT_POWER_WELL_DPIO_CMN_BC) {
+		phy = DPIO_PHY0;
+		assert_pll_disabled(dev_priv, PIPE_A);
+		assert_pll_disabled(dev_priv, PIPE_B);
+	} else {
+		phy = DPIO_PHY1;
+		assert_pll_disabled(dev_priv, PIPE_C);
+	}
+
+	I915_WRITE(DISPLAY_PHY_CONTROL,
+		   PHY_COM_LANE_RESET_ASSERT(phy, I915_READ(DISPLAY_PHY_CONTROL)));
+
+	vlv_set_power_well(dev_priv, power_well, false);
+}
+
+static bool chv_pipe_power_well_enabled(struct drm_i915_private *dev_priv,
+					struct i915_power_well *power_well)
+{
+	enum pipe pipe = power_well->data;
+	bool enabled;
+	u32 state, ctrl;
+
+	mutex_lock(&dev_priv->rps.hw_lock);
+
+	state = vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ) & DP_SSS_MASK(pipe);
+	/*
+	 * We only ever set the power-on and power-gate states, anything
+	 * else is unexpected.
+	 */
+	WARN_ON(state != DP_SSS_PWR_ON(pipe) && state != DP_SSS_PWR_GATE(pipe));
+	enabled = state == DP_SSS_PWR_ON(pipe);
+
+	/*
+	 * A transient state at this point would mean some unexpected party
+	 * is poking at the power controls too.
+	 */
+	ctrl = vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ) & DP_SSC_MASK(pipe);
+	WARN_ON(ctrl << 16 != state);
+
+	mutex_unlock(&dev_priv->rps.hw_lock);
+
+	return enabled;
+}
+
+static void chv_set_pipe_power_well(struct drm_i915_private *dev_priv,
+				    struct i915_power_well *power_well,
+				    bool enable)
+{
+	enum pipe pipe = power_well->data;
+	u32 state;
+	u32 ctrl;
+
+	state = enable ? DP_SSS_PWR_ON(pipe) : DP_SSS_PWR_GATE(pipe);
+
+	mutex_lock(&dev_priv->rps.hw_lock);
+
+#define COND \
+	((vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ) & DP_SSS_MASK(pipe)) == state)
+
+	if (COND)
+		goto out;
+
+	ctrl = vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ);
+	ctrl &= ~DP_SSC_MASK(pipe);
+	ctrl |= enable ? DP_SSC_PWR_ON(pipe) : DP_SSC_PWR_GATE(pipe);
+	vlv_punit_write(dev_priv, PUNIT_REG_DSPFREQ, ctrl);
+
+	if (wait_for(COND, 100))
+		DRM_ERROR("timout setting power well state %08x (%08x)\n",
+			  state,
+			  vlv_punit_read(dev_priv, PUNIT_REG_DSPFREQ));
+
+#undef COND
+
+out:
+	mutex_unlock(&dev_priv->rps.hw_lock);
+}
+
+static void chv_pipe_power_well_sync_hw(struct drm_i915_private *dev_priv,
+					struct i915_power_well *power_well)
+{
+	chv_set_pipe_power_well(dev_priv, power_well, power_well->count > 0);
+}
+
+static void chv_pipe_power_well_enable(struct drm_i915_private *dev_priv,
+				       struct i915_power_well *power_well)
+{
+	WARN_ON_ONCE(power_well->data != PIPE_A &&
+		     power_well->data != PIPE_B &&
+		     power_well->data != PIPE_C);
+
+	chv_set_pipe_power_well(dev_priv, power_well, true);
+}
+
+static void chv_pipe_power_well_disable(struct drm_i915_private *dev_priv,
+					struct i915_power_well *power_well)
+{
+	WARN_ON_ONCE(power_well->data != PIPE_A &&
+		     power_well->data != PIPE_B &&
+		     power_well->data != PIPE_C);
+
+	chv_set_pipe_power_well(dev_priv, power_well, false);
+}
+
 static void check_power_well_state(struct drm_i915_private *dev_priv,
 				   struct i915_power_well *power_well)
 {
@@ -6448,11 +6597,58 @@ EXPORT_SYMBOL_GPL(i915_get_cdclk_freq);
 	BIT(POWER_DOMAIN_PORT_DDI_C_4_LANES) |	\
 	BIT(POWER_DOMAIN_INIT))
 
+#define CHV_PIPE_A_POWER_DOMAINS (	\
+	BIT(POWER_DOMAIN_PIPE_A) |	\
+	BIT(POWER_DOMAIN_INIT))
+
+#define CHV_PIPE_B_POWER_DOMAINS (	\
+	BIT(POWER_DOMAIN_PIPE_B) |	\
+	BIT(POWER_DOMAIN_INIT))
+
+#define CHV_PIPE_C_POWER_DOMAINS (	\
+	BIT(POWER_DOMAIN_PIPE_C) |	\
+	BIT(POWER_DOMAIN_INIT))
+
+#define CHV_DPIO_CMN_BC_POWER_DOMAINS (		\
+	BIT(POWER_DOMAIN_PORT_DDI_B_2_LANES) |	\
+	BIT(POWER_DOMAIN_PORT_DDI_B_4_LANES) |	\
+	BIT(POWER_DOMAIN_PORT_DDI_C_2_LANES) |	\
+	BIT(POWER_DOMAIN_PORT_DDI_C_4_LANES) |	\
+	BIT(POWER_DOMAIN_INIT))
+
+#define CHV_DPIO_CMN_D_POWER_DOMAINS (		\
+	BIT(POWER_DOMAIN_PORT_DDI_D_2_LANES) |	\
+	BIT(POWER_DOMAIN_PORT_DDI_D_4_LANES) |	\
+	BIT(POWER_DOMAIN_INIT))
+
+#define CHV_DPIO_TX_D_LANES_01_POWER_DOMAINS (	\
+	BIT(POWER_DOMAIN_PORT_DDI_D_2_LANES) |	\
+	BIT(POWER_DOMAIN_PORT_DDI_D_4_LANES) |	\
+	BIT(POWER_DOMAIN_INIT))
+
+#define CHV_DPIO_TX_D_LANES_23_POWER_DOMAINS (	\
+	BIT(POWER_DOMAIN_PORT_DDI_D_4_LANES) |	\
+	BIT(POWER_DOMAIN_INIT))
+
 static const struct i915_power_well_ops i9xx_always_on_power_well_ops = {
 	.sync_hw = i9xx_always_on_power_well_noop,
 	.enable = i9xx_always_on_power_well_noop,
 	.disable = i9xx_always_on_power_well_noop,
 	.is_enabled = i9xx_always_on_power_well_enabled,
+};
+
+static const struct i915_power_well_ops chv_pipe_power_well_ops = {
+	.sync_hw = chv_pipe_power_well_sync_hw,
+	.enable = chv_pipe_power_well_enable,
+	.disable = chv_pipe_power_well_disable,
+	.is_enabled = chv_pipe_power_well_enabled,
+};
+
+static const struct i915_power_well_ops chv_dpio_cmn_power_well_ops = {
+	.sync_hw = vlv_power_well_sync_hw,
+	.enable = chv_dpio_cmn_power_well_enable,
+	.disable = chv_dpio_cmn_power_well_disable,
+	.is_enabled = vlv_power_well_enabled,
 };
 
 static struct i915_power_well i9xx_always_on_power_well[] = {
@@ -6577,6 +6773,97 @@ static struct i915_power_well vlv_power_wells[] = {
 	},
 };
 
+static struct i915_power_well chv_power_wells[] = {
+	{
+		.name = "always-on",
+		.always_on = 1,
+		.domains = VLV_ALWAYS_ON_POWER_DOMAINS,
+		.ops = &i9xx_always_on_power_well_ops,
+	},
+#if 0
+	{
+		.name = "display",
+		.domains = VLV_DISPLAY_POWER_DOMAINS,
+		.data = PUNIT_POWER_WELL_DISP2D,
+		.ops = &vlv_display_power_well_ops,
+	},
+	{
+		.name = "pipe-a",
+		.domains = CHV_PIPE_A_POWER_DOMAINS,
+		.data = PIPE_A,
+		.ops = &chv_pipe_power_well_ops,
+	},
+	{
+		.name = "pipe-b",
+		.domains = CHV_PIPE_B_POWER_DOMAINS,
+		.data = PIPE_B,
+		.ops = &chv_pipe_power_well_ops,
+	},
+	{
+		.name = "pipe-c",
+		.domains = CHV_PIPE_C_POWER_DOMAINS,
+		.data = PIPE_C,
+		.ops = &chv_pipe_power_well_ops,
+	},
+#endif
+	{
+		.name = "dpio-common-bc",
+		.domains = CHV_DPIO_CMN_BC_POWER_DOMAINS,
+		.data = PUNIT_POWER_WELL_DPIO_CMN_BC,
+		.ops = &chv_dpio_cmn_power_well_ops,
+	},
+	{
+		.name = "dpio-common-d",
+		.domains = CHV_DPIO_CMN_D_POWER_DOMAINS,
+		.data = PUNIT_POWER_WELL_DPIO_CMN_D,
+		.ops = &chv_dpio_cmn_power_well_ops,
+	},
+#if 0
+	{
+		.name = "dpio-tx-b-01",
+		.domains = VLV_DPIO_TX_B_LANES_01_POWER_DOMAINS |
+			   VLV_DPIO_TX_B_LANES_23_POWER_DOMAINS,
+		.ops = &vlv_dpio_power_well_ops,
+		.data = PUNIT_POWER_WELL_DPIO_TX_B_LANES_01,
+	},
+	{
+		.name = "dpio-tx-b-23",
+		.domains = VLV_DPIO_TX_B_LANES_01_POWER_DOMAINS |
+			   VLV_DPIO_TX_B_LANES_23_POWER_DOMAINS,
+		.ops = &vlv_dpio_power_well_ops,
+		.data = PUNIT_POWER_WELL_DPIO_TX_B_LANES_23,
+	},
+	{
+		.name = "dpio-tx-c-01",
+		.domains = VLV_DPIO_TX_C_LANES_01_POWER_DOMAINS |
+			   VLV_DPIO_TX_C_LANES_23_POWER_DOMAINS,
+		.ops = &vlv_dpio_power_well_ops,
+		.data = PUNIT_POWER_WELL_DPIO_TX_C_LANES_01,
+	},
+	{
+		.name = "dpio-tx-c-23",
+		.domains = VLV_DPIO_TX_C_LANES_01_POWER_DOMAINS |
+			   VLV_DPIO_TX_C_LANES_23_POWER_DOMAINS,
+		.ops = &vlv_dpio_power_well_ops,
+		.data = PUNIT_POWER_WELL_DPIO_TX_C_LANES_23,
+	},
+	{
+		.name = "dpio-tx-d-01",
+		.domains = CHV_DPIO_TX_D_LANES_01_POWER_DOMAINS |
+			   CHV_DPIO_TX_D_LANES_23_POWER_DOMAINS,
+		.ops = &vlv_dpio_power_well_ops,
+		.data = PUNIT_POWER_WELL_DPIO_TX_D_LANES_01,
+	},
+	{
+		.name = "dpio-tx-d-23",
+		.domains = CHV_DPIO_TX_D_LANES_01_POWER_DOMAINS |
+			   CHV_DPIO_TX_D_LANES_23_POWER_DOMAINS,
+		.ops = &vlv_dpio_power_well_ops,
+		.data = PUNIT_POWER_WELL_DPIO_TX_D_LANES_23,
+	},
+#endif
+};
+
 static struct i915_power_well *lookup_power_well(struct drm_i915_private *dev_priv,
 						 enum punit_power_well power_well_id)
 {
@@ -6613,6 +6900,8 @@ int intel_power_domains_init(struct drm_i915_private *dev_priv)
 	} else if (IS_BROADWELL(dev_priv->dev)) {
 		set_power_wells(power_domains, bdw_power_wells);
 		hsw_pwr = power_domains;
+	} else if (IS_CHERRYVIEW(dev_priv->dev)) {
+		set_power_wells(power_domains, chv_power_wells);
 	} else if (IS_VALLEYVIEW(dev_priv->dev)) {
 		set_power_wells(power_domains, vlv_power_wells);
 	} else {

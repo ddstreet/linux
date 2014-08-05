@@ -151,7 +151,7 @@ ironlake_disable_display_irq(struct drm_i915_private *dev_priv, u32 mask)
 {
 	assert_spin_locked(&dev_priv->irq_lock);
 
-	if (!intel_irqs_enabled(dev_priv))
+	if (WARN_ON(!intel_irqs_enabled(dev_priv)))
 		return;
 
 	if ((dev_priv->irq_mask & mask) != mask) {
@@ -1989,13 +1989,8 @@ static void gen6_rps_irq_handler(struct drm_i915_private *dev_priv, u32 pm_iir)
 
 static bool intel_pipe_handle_vblank(struct drm_device *dev, enum pipe pipe)
 {
-	struct intel_crtc *crtc;
-
 	if (!drm_handle_vblank(dev, pipe))
 		return false;
-
-	crtc = to_intel_crtc(intel_get_crtc_for_pipe(dev, pipe));
-	wake_up(&crtc->vbl_wait);
 
 	return true;
 }

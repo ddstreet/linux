@@ -424,8 +424,6 @@ struct intel_crtc {
 		struct intel_pipe_wm active;
 	} wm;
 
-	wait_queue_head_t vbl_wait;
-
 	int scanline_offset;
 	struct intel_mmio_flip mmio_flip;
 };
@@ -912,6 +910,7 @@ bool intel_dp_hpd_pulse(struct intel_digital_port *intel_dig_port,
 void intel_edp_backlight_on(struct intel_dp *intel_dp);
 void intel_edp_backlight_off(struct intel_dp *intel_dp);
 void intel_edp_panel_vdd_on(struct intel_dp *intel_dp);
+void intel_edp_panel_vdd_sanitize(struct intel_encoder *intel_encoder);
 void intel_edp_panel_on(struct intel_dp *intel_dp);
 void intel_edp_panel_off(struct intel_dp *intel_dp);
 void intel_edp_psr_enable(struct intel_dp *intel_dp);
