@@ -6140,6 +6140,9 @@ static void gen3_init_clock_gating(struct drm_device *dev)
 
 	/* On GEN3 we really need to make sure the ARB C3 LP bit is set */
 	I915_WRITE(MI_ARB_STATE, _MASKED_BIT_ENABLE(MI_ARB_C3_LP_WRITE_ENABLE));
+
+	I915_WRITE(MI_ARB_STATE,
+		   _MASKED_BIT_ENABLE(MI_ARB_DISPLAY_TRICKLE_FEED_DISABLE));
 }
 
 static void i85x_init_clock_gating(struct drm_device *dev)
@@ -6151,6 +6154,9 @@ static void i85x_init_clock_gating(struct drm_device *dev)
 	/* interrupts should cause a wake up from C3 */
 	I915_WRITE(MI_STATE, _MASKED_BIT_ENABLE(MI_AGPBUSY_INT_EN) |
 		   _MASKED_BIT_DISABLE(MI_AGPBUSY_830_MODE));
+
+	I915_WRITE(MEM_MODE,
+		   _MASKED_BIT_ENABLE(MEM_DISPLAY_TRICKLE_FEED_DISABLE));
 }
 
 static void i830_init_clock_gating(struct drm_device *dev)
@@ -6158,6 +6164,10 @@ static void i830_init_clock_gating(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	I915_WRITE(DSPCLK_GATE_D, OVRUNIT_CLOCK_GATE_DISABLE);
+
+	I915_WRITE(MEM_MODE,
+		   _MASKED_BIT_ENABLE(MEM_DISPLAY_A_TRICKLE_FEED_DISABLE) |
+		   _MASKED_BIT_ENABLE(MEM_DISPLAY_B_TRICKLE_FEED_DISABLE));
 }
 
 void intel_init_clock_gating(struct drm_device *dev)
