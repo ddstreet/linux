@@ -1301,7 +1301,7 @@ static void assert_planes_disabled(struct drm_i915_private *dev_priv,
 	}
 
 	/* Need to check both planes against the pipe */
-	for_each_pipe(i) {
+	for_each_pipe(dev_priv, i) {
 		reg = DSPCNTR(i);
 		val = I915_READ(reg);
 		cur_pipe = (val & DISPPLANE_SEL_PIPE_MASK) >>
@@ -9000,12 +9000,13 @@ static void intel_mark_fb_busy(struct drm_device *dev,
 			       unsigned frontbuffer_bits,
 			       struct intel_engine_cs *ring)
 {
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	enum pipe pipe;
 
 	if (!i915.powersave)
 		return;
 
-	for_each_pipe(pipe) {
+	for_each_pipe(dev_priv, pipe) {
 		if (!(frontbuffer_bits & INTEL_FRONTBUFFER_ALL_MASK(pipe)))
 			continue;
 
@@ -12759,7 +12760,7 @@ void intel_modeset_init(struct drm_device *dev)
 		      INTEL_INFO(dev)->num_pipes,
 		      INTEL_INFO(dev)->num_pipes > 1 ? "s" : "");
 
-	for_each_pipe(pipe) {
+	for_each_pipe(dev_priv, pipe) {
 		intel_crtc_init(dev, pipe);
 		for_each_sprite(pipe, sprite) {
 			ret = intel_plane_init(dev, pipe, sprite);
@@ -13168,7 +13169,7 @@ void intel_modeset_setup_hw_state(struct drm_device *dev,
 		intel_sanitize_encoder(encoder);
 	}
 
-	for_each_pipe(pipe) {
+	for_each_pipe(dev_priv, pipe) {
 		crtc = to_intel_crtc(dev_priv->pipe_to_crtc_mapping[pipe]);
 		intel_sanitize_crtc(crtc);
 		intel_dump_pipe_config(crtc, &crtc->config, "[setup_hw_state]");
@@ -13196,7 +13197,7 @@ void intel_modeset_setup_hw_state(struct drm_device *dev,
 		 * We need to use raw interfaces for restoring state to avoid
 		 * checking (bogus) intermediate states.
 		 */
-		for_each_pipe(pipe) {
+		for_each_pipe(dev_priv, pipe) {
 			struct drm_crtc *crtc =
 				dev_priv->pipe_to_crtc_mapping[pipe];
 
@@ -13417,7 +13418,7 @@ intel_display_capture_error_state(struct drm_device *dev)
 	if (IS_HASWELL(dev) || IS_BROADWELL(dev))
 		error->power_well_driver = I915_READ(HSW_PWR_WELL_DRIVER);
 
-	for_each_pipe(i) {
+	for_each_pipe(dev_priv, i) {
 		error->pipe[i].power_domain_on =
 			intel_display_power_enabled_unlocked(dev_priv,
 							   POWER_DOMAIN_PIPE(i));
@@ -13481,6 +13482,7 @@ intel_display_print_error_state(struct drm_i915_error_state_buf *m,
 				struct drm_device *dev,
 				struct intel_display_error_state *error)
 {
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	int i;
 
 	if (!error)
@@ -13490,7 +13492,7 @@ intel_display_print_error_state(struct drm_i915_error_state_buf *m,
 	if (IS_HASWELL(dev) || IS_BROADWELL(dev))
 		err_printf(m, "PWR_WELL_CTL2: %08x\n",
 			   error->power_well_driver);
-	for_each_pipe(i) {
+	for_each_pipe(dev_priv, i) {
 		err_printf(m, "Pipe [%d]:\n", i);
 		err_printf(m, "  Power: %s\n",
 			   error->pipe[i].power_domain_on ? "on" : "off");
