@@ -38,6 +38,7 @@
 #include <linux/sunrpc/svcsock.h>
 #include <linux/sunrpc/xprtsock.h>
 #include <linux/file.h>
+#include <linux/sched.h>
 #ifdef CONFIG_SUNRPC_BACKCHANNEL
 #include <linux/sunrpc/bc_xprt.h>
 #endif
@@ -1927,7 +1928,7 @@ static int xs_local_setup_socket(struct sock_xprt *transport)
 	struct socket *sock;
 	int status = -EIO;
 
-	current->flags |= PF_FSTRANS;
+	current->flags |= PF_FSTRANS | PF_MEMALLOC_NOIO;
 
 	clear_bit(XPRT_CONNECTION_ABORT, &xprt->state);
 	status = __sock_create(xprt->xprt_net, AF_LOCAL,
@@ -1968,7 +1969,7 @@ static int xs_local_setup_socket(struct sock_xprt *transport)
 out:
 	xprt_clear_connecting(xprt);
 	xprt_wake_pending_tasks(xprt, status);
-	current->flags &= ~PF_FSTRANS;
+	current->flags &= ~(PF_FSTRANS | PF_MEMALLOC_NOIO);
 	return status;
 }
 
@@ -2071,7 +2072,7 @@ static void xs_udp_setup_socket(struct work_struct *work)
 	struct socket *sock = transport->sock;
 	int status = -EIO;
 
-	current->flags |= PF_FSTRANS;
+	current->flags |= PF_FSTRANS | PF_MEMALLOC_NOIO;
 
 	/* Start by resetting any existing state */
 	xs_reset_transport(transport);
@@ -2092,7 +2093,7 @@ static void xs_udp_setup_socket(struct work_struct *work)
 out:
 	xprt_clear_connecting(xprt);
 	xprt_wake_pending_tasks(xprt, status);
-	current->flags &= ~PF_FSTRANS;
+	current->flags &= ~(PF_FSTRANS | PF_MEMALLOC_NOIO);
 }
 
 /*
@@ -2229,7 +2230,7 @@ static void xs_tcp_setup_socket(struct work_struct *work)
 	struct rpc_xprt *xprt = &transport->xprt;
 	int status = -EIO;
 
-	current->flags |= PF_FSTRANS;
+	current->flags |= PF_FSTRANS | PF_MEMALLOC_NOIO;
 
 	if (!sock) {
 		clear_bit(XPRT_CONNECTION_ABORT, &xprt->state);
@@ -2276,7 +2277,7 @@ static void xs_tcp_setup_socket(struct work_struct *work)
 	case -EINPROGRESS:
 	case -EALREADY:
 		xprt_clear_connecting(xprt);
-		current->flags &= ~PF_FSTRANS;
+		current->flags &= ~(PF_FSTRANS | PF_MEMALLOC_NOIO);
 		return;
 	case -EINVAL:
 		/* Happens, for instance, if the user specified a link
@@ -2294,7 +2295,7 @@ out_eagain:
 out:
 	xprt_clear_connecting(xprt);
 	xprt_wake_pending_tasks(xprt, status);
-	current->flags &= ~PF_FSTRANS;
+	current->flags &= ~(PF_FSTRANS | PF_MEMALLOC_NOIO);
 }
 
 /**
