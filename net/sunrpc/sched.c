@@ -19,6 +19,7 @@
 #include <linux/spinlock.h>
 #include <linux/mutex.h>
 #include <linux/freezer.h>
+#include <linux/sched.h>
 
 #include <linux/sunrpc/clnt.h>
 
@@ -821,9 +822,9 @@ void rpc_execute(struct rpc_task *task)
 
 static void rpc_async_schedule(struct work_struct *work)
 {
-	current->flags |= PF_FSTRANS;
+	current->flags |= PF_FSTRANS | PF_MEMALLOC_NOIO;
 	__rpc_execute(container_of(work, struct rpc_task, u.tk_work));
-	current->flags &= ~PF_FSTRANS;
+	current->flags &= ~(PF_FSTRANS | PF_MEMALLOC_NOIO);
 }
 
 /**
