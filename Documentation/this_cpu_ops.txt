@@ -21,7 +21,7 @@ Read-modify-write operations are of particular interest. Frequently
 processors have special lower latency instructions that can operate
 without the typical synchronization overhead but still provide some
 sort of relaxed atomicity guarantee. The x86 for example can execute
-RMV (Read Modify Write) instructions like inc/dec/cmpxchg without the
+RMW (Read Modify Write) instructions like inc/dec/cmpxchg without the
 lock prefix and the associated latency penalty.
 
 Access to the variable without the lock prefix is not synchronized but
