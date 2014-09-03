@@ -111,7 +111,7 @@ static struct intel_dp *intel_attached_dp(struct drm_connector *connector)
 }
 
 static void intel_dp_link_down(struct intel_dp *intel_dp);
-static bool _edp_panel_vdd_on(struct intel_dp *intel_dp);
+static bool edp_panel_vdd_on(struct intel_dp *intel_dp);
 static void edp_panel_vdd_off(struct intel_dp *intel_dp, bool sync);
 
 int
@@ -308,9 +308,7 @@ vlv_power_sequencer_pipe(struct intel_dp *intel_dp)
 	for (pipe = PIPE_A; pipe <= PIPE_B; pipe++) {
 		u32 port_sel = I915_READ(VLV_PIPE_PP_ON_DELAYS(pipe)) &
 			PANEL_PORT_SELECT_MASK;
-		if (port_sel == PANEL_PORT_SELECT_DPB_VLV && port == PORT_B)
-			return pipe;
-		if (port_sel == PANEL_PORT_SELECT_DPC_VLV && port == PORT_C)
+		if (port_sel == PANEL_PORT_SELECT_VLV(port))
 			return pipe;
 	}
 
@@ -535,7 +533,13 @@ intel_dp_aux_ch(struct intel_dp *intel_dp,
 	bool has_aux_irq = HAS_AUX_IRQ(dev);
 	bool vdd;
 
-	vdd = _edp_panel_vdd_on(intel_dp);
+	/*
+	 * We will be called with VDD already enabled for dpcd/edid/oui reads.
+	 * In such cases we want to leave VDD enabled and it's up to upper layers
+	 * to turn it off. But for eg. i2c-dev access we need to turn it on/off
+	 * ourselves.
+	 */
+	vdd = edp_panel_vdd_on(intel_dp);
 
 	/* dp aux is extremely sensitive to irq latency, hence request the
 	 * lowest possible wakeup latency and so prevent the cpu from going into
@@ -1167,7 +1171,7 @@ static  u32 ironlake_get_pp_control(struct intel_dp *intel_dp)
 	return control;
 }
 
-static bool _edp_panel_vdd_on(struct intel_dp *intel_dp)
+static bool edp_panel_vdd_on(struct intel_dp *intel_dp)
 {
 	struct drm_device *dev = intel_dp_to_dev(intel_dp);
 	struct intel_digital_port *intel_dig_port = dp_to_dig_port(intel_dp);
@@ -1217,49 +1221,54 @@ static bool _edp_panel_vdd_on(struct intel_dp *intel_dp)
 
 void intel_edp_panel_vdd_on(struct intel_dp *intel_dp)
 {
-	if (is_edp(intel_dp)) {
-		bool vdd = _edp_panel_vdd_on(intel_dp);
+	bool vdd;
 
-		WARN(!vdd, "eDP VDD already requested on\n");
-	}
+	if (!is_edp(intel_dp))
+		return;
+
+	vdd = edp_panel_vdd_on(intel_dp);
+
+	WARN(!vdd, "eDP VDD already requested on\n");
 }
 
 static void edp_panel_vdd_off_sync(struct intel_dp *intel_dp)
 {
 	struct drm_device *dev = intel_dp_to_dev(intel_dp);
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct intel_digital_port *intel_dig_port =
+		dp_to_dig_port(intel_dp);
+	struct intel_encoder *intel_encoder = &intel_dig_port->base;
+	enum intel_display_power_domain power_domain;
 	u32 pp;
 	u32 pp_stat_reg, pp_ctrl_reg;
 
 	WARN_ON(!drm_modeset_is_locked(&dev->mode_config.connection_mutex));
 
-	if (!intel_dp->want_panel_vdd && edp_have_panel_vdd(intel_dp)) {
-		struct intel_digital_port *intel_dig_port =
-						dp_to_dig_port(intel_dp);
-		struct intel_encoder *intel_encoder = &intel_dig_port->base;
-		enum intel_display_power_domain power_domain;
+	WARN_ON(intel_dp->want_panel_vdd);
 
-		DRM_DEBUG_KMS("Turning eDP VDD off\n");
+	if (!edp_have_panel_vdd(intel_dp))
+		return;
 
-		pp = ironlake_get_pp_control(intel_dp);
-		pp &= ~EDP_FORCE_VDD;
+	DRM_DEBUG_KMS("Turning eDP VDD off\n");
 
-		pp_ctrl_reg = _pp_ctrl_reg(intel_dp);
-		pp_stat_reg = _pp_stat_reg(intel_dp);
+	pp = ironlake_get_pp_control(intel_dp);
+	pp &= ~EDP_FORCE_VDD;
 
-		I915_WRITE(pp_ctrl_reg, pp);
-		POSTING_READ(pp_ctrl_reg);
+	pp_ctrl_reg = _pp_ctrl_reg(intel_dp);
+	pp_stat_reg = _pp_stat_reg(intel_dp);
 
-		/* Make sure sequencer is idle before allowing subsequent activity */
-		DRM_DEBUG_KMS("PP_STATUS: 0x%08x PP_CONTROL: 0x%08x\n",
-		I915_READ(pp_stat_reg), I915_READ(pp_ctrl_reg));
+	I915_WRITE(pp_ctrl_reg, pp);
+	POSTING_READ(pp_ctrl_reg);
 
-		if ((pp & POWER_TARGET_ON) == 0)
-			intel_dp->last_power_cycle = jiffies;
+	/* Make sure sequencer is idle before allowing subsequent activity */
+	DRM_DEBUG_KMS("PP_STATUS: 0x%08x PP_CONTROL: 0x%08x\n",
+	I915_READ(pp_stat_reg), I915_READ(pp_ctrl_reg));
 
-		power_domain = intel_display_port_power_domain(intel_encoder);
-		intel_display_power_put(dev_priv, power_domain);
-	}
+	if ((pp & POWER_TARGET_ON) == 0)
+		intel_dp->last_power_cycle = jiffies;
+
+	power_domain = intel_display_port_power_domain(intel_encoder);
+	intel_display_power_put(dev_priv, power_domain);
 }
 
 static void edp_panel_vdd_work(struct work_struct *__work)
@@ -1269,7 +1278,8 @@ static void edp_panel_vdd_work(struct work_struct *__work)
 	struct drm_device *dev = intel_dp_to_dev(intel_dp);
 
 	drm_modeset_lock(&dev->mode_config.connection_mutex, NULL);
-	edp_panel_vdd_off_sync(intel_dp);
+	if (!intel_dp->want_panel_vdd)
+		edp_panel_vdd_off_sync(intel_dp);
 	drm_modeset_unlock(&dev->mode_config.connection_mutex);
 }
 
@@ -1299,6 +1309,11 @@ static void edp_panel_vdd_off(struct intel_dp *intel_dp, bool sync)
 		edp_panel_vdd_off_sync(intel_dp);
 	else
 		edp_panel_vdd_schedule_off(intel_dp);
+}
+
+static void intel_edp_panel_vdd_off(struct intel_dp *intel_dp, bool sync)
+{
+	edp_panel_vdd_off(intel_dp, sync);
 }
 
 void intel_edp_panel_on(struct intel_dp *intel_dp)
@@ -1384,20 +1399,14 @@ void intel_edp_panel_off(struct intel_dp *intel_dp)
 	intel_display_power_put(dev_priv, power_domain);
 }
 
-void intel_edp_backlight_on(struct intel_dp *intel_dp)
+/* Enable backlight in the panel power control. */
+static void _intel_edp_backlight_on(struct intel_dp *intel_dp)
 {
 	struct intel_digital_port *intel_dig_port = dp_to_dig_port(intel_dp);
 	struct drm_device *dev = intel_dig_port->base.base.dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 pp;
 	u32 pp_ctrl_reg;
-
-	if (!is_edp(intel_dp))
-		return;
-
-	DRM_DEBUG_KMS("\n");
-
-	intel_panel_enable_backlight(intel_dp->attached_connector);
 
 	/*
 	 * If we enable the backlight right away following a panel power
@@ -1415,17 +1424,26 @@ void intel_edp_backlight_on(struct intel_dp *intel_dp)
 	POSTING_READ(pp_ctrl_reg);
 }
 
-void intel_edp_backlight_off(struct intel_dp *intel_dp)
+/* Enable backlight PWM and backlight PP control. */
+void intel_edp_backlight_on(struct intel_dp *intel_dp)
+{
+	if (!is_edp(intel_dp))
+		return;
+
+	DRM_DEBUG_KMS("\n");
+
+	intel_panel_enable_backlight(intel_dp->attached_connector);
+	_intel_edp_backlight_on(intel_dp);
+}
+
+/* Disable backlight in the panel power control. */
+static void _intel_edp_backlight_off(struct intel_dp *intel_dp)
 {
 	struct drm_device *dev = intel_dp_to_dev(intel_dp);
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 pp;
 	u32 pp_ctrl_reg;
 
-	if (!is_edp(intel_dp))
-		return;
-
-	DRM_DEBUG_KMS("\n");
 	pp = ironlake_get_pp_control(intel_dp);
 	pp &= ~EDP_BLC_ENABLE;
 
@@ -1436,8 +1454,40 @@ void intel_edp_backlight_off(struct intel_dp *intel_dp)
 	intel_dp->last_backlight_off = jiffies;
 
 	edp_wait_backlight_off(intel_dp);
+}
 
+/* Disable backlight PP control and backlight PWM. */
+void intel_edp_backlight_off(struct intel_dp *intel_dp)
+{
+	if (!is_edp(intel_dp))
+		return;
+
+	DRM_DEBUG_KMS("\n");
+
+	_intel_edp_backlight_off(intel_dp);
 	intel_panel_disable_backlight(intel_dp->attached_connector);
+}
+
+/*
+ * Hook for controlling the panel power control backlight through the bl_power
+ * sysfs attribute. Take care to handle multiple calls.
+ */
+static void intel_edp_backlight_power(struct intel_connector *connector,
+				      bool enable)
+{
+	struct intel_dp *intel_dp = intel_attached_dp(&connector->base);
+	bool is_enabled = ironlake_get_pp_control(intel_dp) & EDP_BLC_ENABLE;
+
+	if (is_enabled == enable)
+		return;
+
+	DRM_DEBUG_KMS("panel power control backlight %s\n",
+		      enable ? "enable" : "disable");
+
+	if (enable)
+		_intel_edp_backlight_on(intel_dp);
+	else
+		_intel_edp_backlight_off(intel_dp);
 }
 
 static void ironlake_edp_pll_on(struct intel_dp *intel_dp)
@@ -1503,8 +1553,6 @@ void intel_dp_sink_dpms(struct intel_dp *intel_dp, int mode)
 	if (mode != DRM_MODE_DPMS_ON) {
 		ret = drm_dp_dpcd_writeb(&intel_dp->aux, DP_SET_POWER,
 					 DP_SET_POWER_D3);
-		if (ret != 1)
-			DRM_DEBUG_DRIVER("failed to write sink power state\n");
 	} else {
 		/*
 		 * When turning on, we need to retry for 1ms to give the sink
@@ -1518,6 +1566,10 @@ void intel_dp_sink_dpms(struct intel_dp *intel_dp, int mode)
 			msleep(1);
 		}
 	}
+
+	if (ret != 1)
+		DRM_DEBUG_KMS("failed to %s sink power state\n",
+			      mode == DRM_MODE_DPMS_ON ? "enable" : "disable");
 }
 
 static bool intel_dp_get_hw_state(struct intel_encoder *encoder,
@@ -1564,7 +1616,7 @@ static bool intel_dp_get_hw_state(struct intel_encoder *encoder,
 			return true;
 		}
 
-		for_each_pipe(i) {
+		for_each_pipe(dev_priv, i) {
 			trans_dp = I915_READ(TRANS_DP_CTL(i));
 			if ((trans_dp & TRANS_DP_PORT_SEL_MASK) == trans_sel) {
 				*pipe = i;
@@ -2104,7 +2156,7 @@ static void intel_enable_dp(struct intel_encoder *encoder)
 	intel_dp_sink_dpms(intel_dp, DRM_MODE_DPMS_ON);
 	intel_dp_start_link_train(intel_dp);
 	intel_edp_panel_on(intel_dp);
-	edp_panel_vdd_off(intel_dp, true);
+	intel_edp_panel_vdd_off(intel_dp, true);
 	intel_dp_complete_link_train(intel_dp);
 	intel_dp_stop_link_train(intel_dp);
 }
@@ -2381,13 +2433,13 @@ intel_dp_voltage_max(struct intel_dp *intel_dp)
 	enum port port = dp_to_dig_port(intel_dp)->port;
 
 	if (IS_VALLEYVIEW(dev))
-		return DP_TRAIN_VOLTAGE_SWING_1200;
+		return DP_TRAIN_VOLTAGE_SWING_LEVEL_3;
 	else if (IS_GEN7(dev) && port == PORT_A)
-		return DP_TRAIN_VOLTAGE_SWING_800;
+		return DP_TRAIN_VOLTAGE_SWING_LEVEL_2;
 	else if (HAS_PCH_CPT(dev) && port != PORT_A)
-		return DP_TRAIN_VOLTAGE_SWING_1200;
+		return DP_TRAIN_VOLTAGE_SWING_LEVEL_3;
 	else
-		return DP_TRAIN_VOLTAGE_SWING_800;
+		return DP_TRAIN_VOLTAGE_SWING_LEVEL_2;
 }
 
 static uint8_t
@@ -2398,49 +2450,49 @@ intel_dp_pre_emphasis_max(struct intel_dp *intel_dp, uint8_t voltage_swing)
 
 	if (IS_HASWELL(dev) || IS_BROADWELL(dev)) {
 		switch (voltage_swing & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
-			return DP_TRAIN_PRE_EMPHASIS_9_5;
-		case DP_TRAIN_VOLTAGE_SWING_600:
-			return DP_TRAIN_PRE_EMPHASIS_6;
-		case DP_TRAIN_VOLTAGE_SWING_800:
-			return DP_TRAIN_PRE_EMPHASIS_3_5;
-		case DP_TRAIN_VOLTAGE_SWING_1200:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
+			return DP_TRAIN_PRE_EMPH_LEVEL_3;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
+			return DP_TRAIN_PRE_EMPH_LEVEL_2;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
+			return DP_TRAIN_PRE_EMPH_LEVEL_1;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_3:
 		default:
-			return DP_TRAIN_PRE_EMPHASIS_0;
+			return DP_TRAIN_PRE_EMPH_LEVEL_0;
 		}
 	} else if (IS_VALLEYVIEW(dev)) {
 		switch (voltage_swing & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
-			return DP_TRAIN_PRE_EMPHASIS_9_5;
-		case DP_TRAIN_VOLTAGE_SWING_600:
-			return DP_TRAIN_PRE_EMPHASIS_6;
-		case DP_TRAIN_VOLTAGE_SWING_800:
-			return DP_TRAIN_PRE_EMPHASIS_3_5;
-		case DP_TRAIN_VOLTAGE_SWING_1200:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
+			return DP_TRAIN_PRE_EMPH_LEVEL_3;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
+			return DP_TRAIN_PRE_EMPH_LEVEL_2;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
+			return DP_TRAIN_PRE_EMPH_LEVEL_1;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_3:
 		default:
-			return DP_TRAIN_PRE_EMPHASIS_0;
+			return DP_TRAIN_PRE_EMPH_LEVEL_0;
 		}
 	} else if (IS_GEN7(dev) && port == PORT_A) {
 		switch (voltage_swing & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
-			return DP_TRAIN_PRE_EMPHASIS_6;
-		case DP_TRAIN_VOLTAGE_SWING_600:
-		case DP_TRAIN_VOLTAGE_SWING_800:
-			return DP_TRAIN_PRE_EMPHASIS_3_5;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
+			return DP_TRAIN_PRE_EMPH_LEVEL_2;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
+			return DP_TRAIN_PRE_EMPH_LEVEL_1;
 		default:
-			return DP_TRAIN_PRE_EMPHASIS_0;
+			return DP_TRAIN_PRE_EMPH_LEVEL_0;
 		}
 	} else {
 		switch (voltage_swing & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
-			return DP_TRAIN_PRE_EMPHASIS_6;
-		case DP_TRAIN_VOLTAGE_SWING_600:
-			return DP_TRAIN_PRE_EMPHASIS_6;
-		case DP_TRAIN_VOLTAGE_SWING_800:
-			return DP_TRAIN_PRE_EMPHASIS_3_5;
-		case DP_TRAIN_VOLTAGE_SWING_1200:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
+			return DP_TRAIN_PRE_EMPH_LEVEL_2;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
+			return DP_TRAIN_PRE_EMPH_LEVEL_2;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
+			return DP_TRAIN_PRE_EMPH_LEVEL_1;
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_3:
 		default:
-			return DP_TRAIN_PRE_EMPHASIS_0;
+			return DP_TRAIN_PRE_EMPH_LEVEL_0;
 		}
 	}
 }
@@ -2459,22 +2511,22 @@ static uint32_t intel_vlv_signal_levels(struct intel_dp *intel_dp)
 	int pipe = intel_crtc->pipe;
 
 	switch (train_set & DP_TRAIN_PRE_EMPHASIS_MASK) {
-	case DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_PRE_EMPH_LEVEL_0:
 		preemph_reg_value = 0x0004000;
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			demph_reg_value = 0x2B405555;
 			uniqtranscale_reg_value = 0x552AB83A;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_600:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 			demph_reg_value = 0x2B404040;
 			uniqtranscale_reg_value = 0x5548B83A;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_800:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
 			demph_reg_value = 0x2B245555;
 			uniqtranscale_reg_value = 0x5560B83A;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_1200:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_3:
 			demph_reg_value = 0x2B405555;
 			uniqtranscale_reg_value = 0x5598DA3A;
 			break;
@@ -2482,18 +2534,18 @@ static uint32_t intel_vlv_signal_levels(struct intel_dp *intel_dp)
 			return 0;
 		}
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_PRE_EMPH_LEVEL_1:
 		preemph_reg_value = 0x0002000;
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			demph_reg_value = 0x2B404040;
 			uniqtranscale_reg_value = 0x5552B83A;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_600:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 			demph_reg_value = 0x2B404848;
 			uniqtranscale_reg_value = 0x5580B83A;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_800:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
 			demph_reg_value = 0x2B404040;
 			uniqtranscale_reg_value = 0x55ADDA3A;
 			break;
@@ -2501,14 +2553,14 @@ static uint32_t intel_vlv_signal_levels(struct intel_dp *intel_dp)
 			return 0;
 		}
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_6:
+	case DP_TRAIN_PRE_EMPH_LEVEL_2:
 		preemph_reg_value = 0x0000000;
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			demph_reg_value = 0x2B305555;
 			uniqtranscale_reg_value = 0x5570B83A;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_600:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 			demph_reg_value = 0x2B2B4040;
 			uniqtranscale_reg_value = 0x55ADDA3A;
 			break;
@@ -2516,10 +2568,10 @@ static uint32_t intel_vlv_signal_levels(struct intel_dp *intel_dp)
 			return 0;
 		}
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_9_5:
+	case DP_TRAIN_PRE_EMPH_LEVEL_3:
 		preemph_reg_value = 0x0006000;
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			demph_reg_value = 0x1B405555;
 			uniqtranscale_reg_value = 0x55ADDA3A;
 			break;
@@ -2558,21 +2610,21 @@ static uint32_t intel_chv_signal_levels(struct intel_dp *intel_dp)
 	int i;
 
 	switch (train_set & DP_TRAIN_PRE_EMPHASIS_MASK) {
-	case DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_PRE_EMPH_LEVEL_0:
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			deemph_reg_value = 128;
 			margin_reg_value = 52;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_600:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 			deemph_reg_value = 128;
 			margin_reg_value = 77;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_800:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
 			deemph_reg_value = 128;
 			margin_reg_value = 102;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_1200:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_3:
 			deemph_reg_value = 128;
 			margin_reg_value = 154;
 			/* FIXME extra to set for 1200 */
@@ -2581,17 +2633,17 @@ static uint32_t intel_chv_signal_levels(struct intel_dp *intel_dp)
 			return 0;
 		}
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_PRE_EMPH_LEVEL_1:
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			deemph_reg_value = 85;
 			margin_reg_value = 78;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_600:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 			deemph_reg_value = 85;
 			margin_reg_value = 116;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_800:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
 			deemph_reg_value = 85;
 			margin_reg_value = 154;
 			break;
@@ -2599,13 +2651,13 @@ static uint32_t intel_chv_signal_levels(struct intel_dp *intel_dp)
 			return 0;
 		}
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_6:
+	case DP_TRAIN_PRE_EMPH_LEVEL_2:
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			deemph_reg_value = 64;
 			margin_reg_value = 104;
 			break;
-		case DP_TRAIN_VOLTAGE_SWING_600:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 			deemph_reg_value = 64;
 			margin_reg_value = 154;
 			break;
@@ -2613,9 +2665,9 @@ static uint32_t intel_chv_signal_levels(struct intel_dp *intel_dp)
 			return 0;
 		}
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_9_5:
+	case DP_TRAIN_PRE_EMPH_LEVEL_3:
 		switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-		case DP_TRAIN_VOLTAGE_SWING_400:
+		case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 			deemph_reg_value = 43;
 			margin_reg_value = 154;
 			break;
@@ -2662,9 +2714,9 @@ static uint32_t intel_chv_signal_levels(struct intel_dp *intel_dp)
 	}
 
 	if (((train_set & DP_TRAIN_PRE_EMPHASIS_MASK)
-			== DP_TRAIN_PRE_EMPHASIS_0) &&
+			== DP_TRAIN_PRE_EMPH_LEVEL_0) &&
 		((train_set & DP_TRAIN_VOLTAGE_SWING_MASK)
-			== DP_TRAIN_VOLTAGE_SWING_1200)) {
+			== DP_TRAIN_VOLTAGE_SWING_LEVEL_3)) {
 
 		/*
 		 * The document said it needs to set bit 27 for ch0 and bit 26
@@ -2743,32 +2795,32 @@ intel_gen4_signal_levels(uint8_t train_set)
 	uint32_t	signal_levels = 0;
 
 	switch (train_set & DP_TRAIN_VOLTAGE_SWING_MASK) {
-	case DP_TRAIN_VOLTAGE_SWING_400:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0:
 	default:
 		signal_levels |= DP_VOLTAGE_0_4;
 		break;
-	case DP_TRAIN_VOLTAGE_SWING_600:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1:
 		signal_levels |= DP_VOLTAGE_0_6;
 		break;
-	case DP_TRAIN_VOLTAGE_SWING_800:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2:
 		signal_levels |= DP_VOLTAGE_0_8;
 		break;
-	case DP_TRAIN_VOLTAGE_SWING_1200:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_3:
 		signal_levels |= DP_VOLTAGE_1_2;
 		break;
 	}
 	switch (train_set & DP_TRAIN_PRE_EMPHASIS_MASK) {
-	case DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_PRE_EMPH_LEVEL_0:
 	default:
 		signal_levels |= DP_PRE_EMPHASIS_0;
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_PRE_EMPH_LEVEL_1:
 		signal_levels |= DP_PRE_EMPHASIS_3_5;
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_6:
+	case DP_TRAIN_PRE_EMPH_LEVEL_2:
 		signal_levels |= DP_PRE_EMPHASIS_6;
 		break;
-	case DP_TRAIN_PRE_EMPHASIS_9_5:
+	case DP_TRAIN_PRE_EMPH_LEVEL_3:
 		signal_levels |= DP_PRE_EMPHASIS_9_5;
 		break;
 	}
@@ -2782,19 +2834,19 @@ intel_gen6_edp_signal_levels(uint8_t train_set)
 	int signal_levels = train_set & (DP_TRAIN_VOLTAGE_SWING_MASK |
 					 DP_TRAIN_PRE_EMPHASIS_MASK);
 	switch (signal_levels) {
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_0:
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_0:
 		return EDP_LINK_TRAIN_400_600MV_0DB_SNB_B;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_1:
 		return EDP_LINK_TRAIN_400MV_3_5DB_SNB_B;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_6:
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_6:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_2:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_2:
 		return EDP_LINK_TRAIN_400_600MV_6DB_SNB_B;
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_3_5:
-	case DP_TRAIN_VOLTAGE_SWING_800 | DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_1:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2 | DP_TRAIN_PRE_EMPH_LEVEL_1:
 		return EDP_LINK_TRAIN_600_800MV_3_5DB_SNB_B;
-	case DP_TRAIN_VOLTAGE_SWING_800 | DP_TRAIN_PRE_EMPHASIS_0:
-	case DP_TRAIN_VOLTAGE_SWING_1200 | DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2 | DP_TRAIN_PRE_EMPH_LEVEL_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_3 | DP_TRAIN_PRE_EMPH_LEVEL_0:
 		return EDP_LINK_TRAIN_800_1200MV_0DB_SNB_B;
 	default:
 		DRM_DEBUG_KMS("Unsupported voltage swing/pre-emphasis level:"
@@ -2810,21 +2862,21 @@ intel_gen7_edp_signal_levels(uint8_t train_set)
 	int signal_levels = train_set & (DP_TRAIN_VOLTAGE_SWING_MASK |
 					 DP_TRAIN_PRE_EMPHASIS_MASK);
 	switch (signal_levels) {
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_0:
 		return EDP_LINK_TRAIN_400MV_0DB_IVB;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_1:
 		return EDP_LINK_TRAIN_400MV_3_5DB_IVB;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_6:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_2:
 		return EDP_LINK_TRAIN_400MV_6DB_IVB;
 
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_0:
 		return EDP_LINK_TRAIN_600MV_0DB_IVB;
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_1:
 		return EDP_LINK_TRAIN_600MV_3_5DB_IVB;
 
-	case DP_TRAIN_VOLTAGE_SWING_800 | DP_TRAIN_PRE_EMPHASIS_0:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2 | DP_TRAIN_PRE_EMPH_LEVEL_0:
 		return EDP_LINK_TRAIN_800MV_0DB_IVB;
-	case DP_TRAIN_VOLTAGE_SWING_800 | DP_TRAIN_PRE_EMPHASIS_3_5:
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2 | DP_TRAIN_PRE_EMPH_LEVEL_1:
 		return EDP_LINK_TRAIN_800MV_3_5DB_IVB;
 
 	default:
@@ -2841,30 +2893,30 @@ intel_hsw_signal_levels(uint8_t train_set)
 	int signal_levels = train_set & (DP_TRAIN_VOLTAGE_SWING_MASK |
 					 DP_TRAIN_PRE_EMPHASIS_MASK);
 	switch (signal_levels) {
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_0:
-		return DDI_BUF_EMP_400MV_0DB_HSW;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_3_5:
-		return DDI_BUF_EMP_400MV_3_5DB_HSW;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_6:
-		return DDI_BUF_EMP_400MV_6DB_HSW;
-	case DP_TRAIN_VOLTAGE_SWING_400 | DP_TRAIN_PRE_EMPHASIS_9_5:
-		return DDI_BUF_EMP_400MV_9_5DB_HSW;
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_0:
+		return DDI_BUF_TRANS_SELECT(0);
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_1:
+		return DDI_BUF_TRANS_SELECT(1);
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_2:
+		return DDI_BUF_TRANS_SELECT(2);
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_0 | DP_TRAIN_PRE_EMPH_LEVEL_3:
+		return DDI_BUF_TRANS_SELECT(3);
 
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_0:
-		return DDI_BUF_EMP_600MV_0DB_HSW;
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_3_5:
-		return DDI_BUF_EMP_600MV_3_5DB_HSW;
-	case DP_TRAIN_VOLTAGE_SWING_600 | DP_TRAIN_PRE_EMPHASIS_6:
-		return DDI_BUF_EMP_600MV_6DB_HSW;
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_0:
+		return DDI_BUF_TRANS_SELECT(4);
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_1:
+		return DDI_BUF_TRANS_SELECT(5);
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_1 | DP_TRAIN_PRE_EMPH_LEVEL_2:
+		return DDI_BUF_TRANS_SELECT(6);
 
-	case DP_TRAIN_VOLTAGE_SWING_800 | DP_TRAIN_PRE_EMPHASIS_0:
-		return DDI_BUF_EMP_800MV_0DB_HSW;
-	case DP_TRAIN_VOLTAGE_SWING_800 | DP_TRAIN_PRE_EMPHASIS_3_5:
-		return DDI_BUF_EMP_800MV_3_5DB_HSW;
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2 | DP_TRAIN_PRE_EMPH_LEVEL_0:
+		return DDI_BUF_TRANS_SELECT(7);
+	case DP_TRAIN_VOLTAGE_SWING_LEVEL_2 | DP_TRAIN_PRE_EMPH_LEVEL_1:
+		return DDI_BUF_TRANS_SELECT(8);
 	default:
 		DRM_DEBUG_KMS("Unsupported voltage swing/pre-emphasis level:"
 			      "0x%x\n", signal_levels);
-		return DDI_BUF_EMP_400MV_0DB_HSW;
+		return DDI_BUF_TRANS_SELECT(0);
 	}
 }
 
@@ -3318,15 +3370,11 @@ intel_dp_get_dpcd(struct intel_dp *intel_dp)
 	struct drm_device *dev = dig_port->base.base.dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
-	char dpcd_hex_dump[sizeof(intel_dp->dpcd) * 3];
-
 	if (intel_dp_dpcd_read_wake(&intel_dp->aux, 0x000, intel_dp->dpcd,
 				    sizeof(intel_dp->dpcd)) < 0)
 		return false; /* aux transfer failed */
 
-	hex_dump_to_buffer(intel_dp->dpcd, sizeof(intel_dp->dpcd),
-			   32, 1, dpcd_hex_dump, sizeof(dpcd_hex_dump), false);
-	DRM_DEBUG_KMS("DPCD: %s\n", dpcd_hex_dump);
+	DRM_DEBUG_KMS("DPCD: %*ph\n", (int) sizeof(intel_dp->dpcd), intel_dp->dpcd);
 
 	if (intel_dp->dpcd[DP_DPCD_REV] == 0)
 		return false; /* DPCD not present */
@@ -3384,7 +3432,7 @@ intel_dp_probe_oui(struct intel_dp *intel_dp)
 		DRM_DEBUG_KMS("Branch OUI: %02hx%02hx%02hx\n",
 			      buf[0], buf[1], buf[2]);
 
-	edp_panel_vdd_off(intel_dp, false);
+	intel_edp_panel_vdd_off(intel_dp, false);
 }
 
 static bool
@@ -3398,7 +3446,7 @@ intel_dp_probe_mst(struct intel_dp *intel_dp)
 	if (intel_dp->dpcd[DP_DPCD_REV] < 0x12)
 		return false;
 
-	_edp_panel_vdd_on(intel_dp);
+	intel_edp_panel_vdd_on(intel_dp);
 	if (intel_dp_dpcd_read_wake(&intel_dp->aux, DP_MSTM_CAP, buf, 1)) {
 		if (buf[0] & DP_MST_CAP) {
 			DRM_DEBUG_KMS("Sink is MST capable\n");
@@ -3408,7 +3456,7 @@ intel_dp_probe_mst(struct intel_dp *intel_dp)
 			intel_dp->is_mst = false;
 		}
 	}
-	edp_panel_vdd_off(intel_dp, false);
+	intel_edp_panel_vdd_off(intel_dp, false);
 
 	drm_dp_mst_topology_mgr_set_mst(&intel_dp->mst_mgr, intel_dp->is_mst);
 	return intel_dp->is_mst;
@@ -4293,6 +4341,7 @@ intel_dp_init_panel_power_sequencer_registers(struct drm_device *dev,
 	u32 pp_on, pp_off, pp_div, port_sel = 0;
 	int div = HAS_PCH_SPLIT(dev) ? intel_pch_rawclk(dev) : intel_hrawclk(dev);
 	int pp_on_reg, pp_off_reg, pp_div_reg;
+	enum port port = dp_to_dig_port(intel_dp)->port;
 
 	if (HAS_PCH_SPLIT(dev)) {
 		pp_on_reg = PCH_PP_ON_DELAYS;
@@ -4327,12 +4376,9 @@ intel_dp_init_panel_power_sequencer_registers(struct drm_device *dev,
 	/* Haswell doesn't have any port selection bits for the panel
 	 * power sequencer any more. */
 	if (IS_VALLEYVIEW(dev)) {
-		if (dp_to_dig_port(intel_dp)->port == PORT_B)
-			port_sel = PANEL_PORT_SELECT_DPB_VLV;
-		else
-			port_sel = PANEL_PORT_SELECT_DPC_VLV;
+		port_sel = PANEL_PORT_SELECT_VLV(port);
 	} else if (HAS_PCH_IBX(dev) || HAS_PCH_CPT(dev)) {
-		if (dp_to_dig_port(intel_dp)->port == PORT_A)
+		if (port == PORT_A)
 			port_sel = PANEL_PORT_SELECT_DPA;
 		else
 			port_sel = PANEL_PORT_SELECT_DPD;
@@ -4530,7 +4576,7 @@ static bool intel_edp_init_connector(struct intel_dp *intel_dp,
 	/* Cache DPCD and EDID for edp. */
 	intel_edp_panel_vdd_on(intel_dp);
 	has_dpcd = intel_dp_get_dpcd(intel_dp);
-	edp_panel_vdd_off(intel_dp, false);
+	intel_edp_panel_vdd_off(intel_dp, false);
 
 	if (has_dpcd) {
 		if (intel_dp->dpcd[DP_DPCD_REV] >= 0x11)
@@ -4588,6 +4634,7 @@ static bool intel_edp_init_connector(struct intel_dp *intel_dp,
 	}
 
 	intel_panel_init(&intel_connector->panel, fixed_mode, downclock_mode);
+	intel_connector->panel.backlight_power = intel_edp_backlight_power;
 	intel_panel_setup_backlight(connector);
 
 	return true;

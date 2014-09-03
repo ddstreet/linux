@@ -136,7 +136,7 @@ describe_obj(struct seq_file *m, struct drm_i915_gem_object *obj)
 		   obj->last_read_seqno,
 		   obj->last_write_seqno,
 		   obj->last_fenced_seqno,
-		   i915_cache_level_str(obj->cache_level),
+		   i915_cache_level_str(to_i915(obj->base.dev), obj->cache_level),
 		   obj->dirty ? " dirty" : "",
 		   obj->madv == I915_MADV_DONTNEED ? " purgeable" : "");
 	if (obj->base.name)
@@ -662,7 +662,7 @@ static int i915_interrupt_info(struct seq_file *m, void *data)
 			   I915_READ(VLV_IIR_RW));
 		seq_printf(m, "Display IMR:\t%08x\n",
 			   I915_READ(VLV_IMR));
-		for_each_pipe(pipe)
+		for_each_pipe(dev_priv, pipe)
 			seq_printf(m, "Pipe %c stat:\t%08x\n",
 				   pipe_name(pipe),
 				   I915_READ(PIPESTAT(pipe)));
@@ -702,7 +702,7 @@ static int i915_interrupt_info(struct seq_file *m, void *data)
 				   i, I915_READ(GEN8_GT_IER(i)));
 		}
 
-		for_each_pipe(pipe) {
+		for_each_pipe(dev_priv, pipe) {
 			if (!intel_display_power_enabled(dev_priv,
 						POWER_DOMAIN_PIPE(pipe))) {
 				seq_printf(m, "Pipe %c power disabled\n",
@@ -749,7 +749,7 @@ static int i915_interrupt_info(struct seq_file *m, void *data)
 			   I915_READ(VLV_IIR_RW));
 		seq_printf(m, "Display IMR:\t%08x\n",
 			   I915_READ(VLV_IMR));
-		for_each_pipe(pipe)
+		for_each_pipe(dev_priv, pipe)
 			seq_printf(m, "Pipe %c stat:\t%08x\n",
 				   pipe_name(pipe),
 				   I915_READ(PIPESTAT(pipe)));
@@ -785,7 +785,7 @@ static int i915_interrupt_info(struct seq_file *m, void *data)
 			   I915_READ(IIR));
 		seq_printf(m, "Interrupt mask:      %08x\n",
 			   I915_READ(IMR));
-		for_each_pipe(pipe)
+		for_each_pipe(dev_priv, pipe)
 			seq_printf(m, "Pipe %c stat:         %08x\n",
 				   pipe_name(pipe),
 				   I915_READ(PIPESTAT(pipe)));
@@ -933,7 +933,7 @@ static ssize_t i915_error_state_read(struct file *file, char __user *userbuf,
 	ssize_t ret_count = 0;
 	int ret;
 
-	ret = i915_error_state_buf_init(&error_str, count, *pos);
+	ret = i915_error_state_buf_init(&error_str, to_i915(error_priv->dev), count, *pos);
 	if (ret)
 		return ret;
 
@@ -1030,6 +1030,7 @@ static int i915_frequency_info(struct seq_file *m, void *unused)
 		u32 rpstat, cagf, reqf;
 		u32 rpupei, rpcurup, rpprevup;
 		u32 rpdownei, rpcurdown, rpprevdown;
+		u32 pm_ier, pm_imr, pm_isr, pm_iir, pm_mask;
 		int max_freq;
 
 		/* RPSTAT1 is in the GT power well */
@@ -1067,12 +1068,21 @@ static int i915_frequency_info(struct seq_file *m, void *unused)
 		gen6_gt_force_wake_put(dev_priv, FORCEWAKE_ALL);
 		mutex_unlock(&dev->struct_mutex);
 
+		if (IS_GEN6(dev) || IS_GEN7(dev)) {
+			pm_ier = I915_READ(GEN6_PMIER);
+			pm_imr = I915_READ(GEN6_PMIMR);
+			pm_isr = I915_READ(GEN6_PMISR);
+			pm_iir = I915_READ(GEN6_PMIIR);
+			pm_mask = I915_READ(GEN6_PMINTRMSK);
+		} else {
+			pm_ier = I915_READ(GEN8_GT_IER(2));
+			pm_imr = I915_READ(GEN8_GT_IMR(2));
+			pm_isr = I915_READ(GEN8_GT_ISR(2));
+			pm_iir = I915_READ(GEN8_GT_IIR(2));
+			pm_mask = I915_READ(GEN6_PMINTRMSK);
+		}
 		seq_printf(m, "PM IER=0x%08x IMR=0x%08x ISR=0x%08x IIR=0x%08x, MASK=0x%08x\n",
-			   I915_READ(GEN6_PMIER),
-			   I915_READ(GEN6_PMIMR),
-			   I915_READ(GEN6_PMISR),
-			   I915_READ(GEN6_PMIIR),
-			   I915_READ(GEN6_PMINTRMSK));
+			   pm_ier, pm_imr, pm_isr, pm_iir, pm_mask);
 		seq_printf(m, "GT_PERF_STATUS: 0x%08x\n", gt_perf_status);
 		seq_printf(m, "Render p-state ratio: %d\n",
 			   (gt_perf_status & 0xff00) >> 8);
@@ -1371,7 +1381,7 @@ static int i915_drpc_info(struct seq_file *m, void *unused)
 
 	if (IS_VALLEYVIEW(dev))
 		return vlv_drpc_info(m);
-	else if (IS_GEN6(dev) || IS_GEN7(dev))
+	else if (INTEL_INFO(dev)->gen >= 6)
 		return gen6_drpc_info(m);
 	else
 		return ironlake_drpc_info(m);
@@ -2614,6 +2624,45 @@ static int i915_shared_dplls_info(struct seq_file *m, void *unused)
 		seq_printf(m, " wrpll:   0x%08x\n", pll->hw_state.wrpll);
 	}
 	drm_modeset_unlock_all(dev);
+
+	return 0;
+}
+
+static int intel_wa_registers(struct seq_file *m, void *unused)
+{
+	int i;
+	int ret;
+	struct drm_info_node *node = (struct drm_info_node *) m->private;
+	struct drm_device *dev = node->minor->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	if (!IS_BROADWELL(dev)) {
+		DRM_DEBUG_DRIVER("Workaround table not available !!\n");
+		return -EINVAL;
+	}
+
+	ret = mutex_lock_interruptible(&dev->struct_mutex);
+	if (ret)
+		return ret;
+
+	intel_runtime_pm_get(dev_priv);
+
+	seq_printf(m, "Workarounds applied: %d\n", dev_priv->num_wa_regs);
+	for (i = 0; i < dev_priv->num_wa_regs; ++i) {
+		u32 addr, mask;
+
+		addr = dev_priv->intel_wa_regs[i].addr;
+		mask = dev_priv->intel_wa_regs[i].mask;
+		dev_priv->intel_wa_regs[i].value = I915_READ(addr) | mask;
+		if (dev_priv->intel_wa_regs[i].addr)
+			seq_printf(m, "0x%X: 0x%08X, mask: 0x%08X\n",
+				   dev_priv->intel_wa_regs[i].addr,
+				   dev_priv->intel_wa_regs[i].value,
+				   dev_priv->intel_wa_regs[i].mask);
+	}
+
+	intel_runtime_pm_put(dev_priv);
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -4149,6 +4198,7 @@ static const struct drm_info_list i915_debugfs_list[] = {
 	{"i915_semaphore_status", i915_semaphore_status, 0},
 	{"i915_shared_dplls_info", i915_shared_dplls_info, 0},
 	{"i915_dp_mst_info", i915_dp_mst_info, 0},
+	{"intel_wa_registers", intel_wa_registers, 0}
 };
 #define I915_DEBUGFS_ENTRIES ARRAY_SIZE(i915_debugfs_list)
 
@@ -4178,7 +4228,7 @@ void intel_display_crc_init(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	enum pipe pipe;
 
-	for_each_pipe(pipe) {
+	for_each_pipe(dev_priv, pipe) {
 		struct intel_pipe_crc *pipe_crc = &dev_priv->pipe_crc[pipe];
 
 		pipe_crc->opened = false;

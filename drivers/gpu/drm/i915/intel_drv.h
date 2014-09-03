@@ -25,6 +25,7 @@
 #ifndef __INTEL_DRV_H__
 #define __INTEL_DRV_H__
 
+#include <linux/async.h>
 #include <linux/i2c.h>
 #include <linux/hdmi.h>
 #include <drm/i915_drm.h>
@@ -179,6 +180,8 @@ struct intel_panel {
 		bool active_low_pwm;
 		struct backlight_device *device;
 	} backlight;
+
+	void (*backlight_power)(struct intel_connector *, bool enable);
 };
 
 struct intel_connector {
@@ -828,7 +831,6 @@ int intel_get_pipe_from_crtc_id(struct drm_device *dev, void *data,
 enum transcoder intel_pipe_to_cpu_transcoder(struct drm_i915_private *dev_priv,
 					     enum pipe pipe);
 void intel_wait_for_vblank(struct drm_device *dev, int pipe);
-void intel_wait_for_pipe_off(struct drm_device *dev, int pipe);
 int ironlake_get_lanes_required(int target_clock, int link_bw, int bpp);
 void vlv_wait_port_ready(struct drm_i915_private *dev_priv,
 			 struct intel_digital_port *dport);
@@ -951,7 +953,7 @@ void intel_dvo_init(struct drm_device *dev);
 /* legacy fbdev emulation in intel_fbdev.c */
 #ifdef CONFIG_DRM_I915_FBDEV
 extern int intel_fbdev_init(struct drm_device *dev);
-extern void intel_fbdev_initial_config(struct drm_device *dev);
+extern void intel_fbdev_initial_config(void *data, async_cookie_t cookie);
 extern void intel_fbdev_fini(struct drm_device *dev);
 extern void intel_fbdev_set_suspend(struct drm_device *dev, int state, bool synchronous);
 extern void intel_fbdev_output_poll_changed(struct drm_device *dev);
@@ -962,7 +964,7 @@ static inline int intel_fbdev_init(struct drm_device *dev)
 	return 0;
 }
 
-static inline void intel_fbdev_initial_config(struct drm_device *dev)
+static inline void intel_fbdev_initial_config(void *data, async_cookie_t cookie)
 {
 }
 
@@ -1093,6 +1095,9 @@ bool intel_sdvo_init(struct drm_device *dev, uint32_t sdvo_reg, bool is_sdvob);
 int intel_plane_init(struct drm_device *dev, enum pipe pipe, int plane);
 void intel_flush_primary_plane(struct drm_i915_private *dev_priv,
 			       enum plane plane);
+int intel_plane_set_property(struct drm_plane *plane,
+			     struct drm_property *prop,
+			     uint64_t val);
 int intel_plane_restore(struct drm_plane *plane);
 void intel_plane_disable(struct drm_plane *plane);
 int intel_sprite_set_colorkey(struct drm_device *dev, void *data,
