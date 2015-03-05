@@ -2426,6 +2426,7 @@ EXPORT_SYMBOL vmlinux 0x1bb299e7	drm_mode_config_init
 EXPORT_SYMBOL vmlinux 0x1bb5df16	inet_ioctl
 EXPORT_SYMBOL vmlinux 0x1bd40277	block_write_begin
 EXPORT_SYMBOL vmlinux 0x1bf18a56	neigh_resolve_output
+EXPORT_SYMBOL vmlinux 0x1bf45f78	path_is_under
 EXPORT_SYMBOL vmlinux 0x1bfadc18	jbd2_journal_unlock_updates
 EXPORT_SYMBOL vmlinux 0x1c13c655	dentry_unhash
 EXPORT_SYMBOL vmlinux 0x1c1af916	set_normalized_timespec
@@ -4970,7 +4971,6 @@ EXPORT_SYMBOL vmlinux 0xb18e6948	omap_dss_pal_timings
 EXPORT_SYMBOL vmlinux 0xb19760c3	bitmap_onto
 EXPORT_SYMBOL vmlinux 0xb1a81e82	unregister_con_driver
 EXPORT_SYMBOL vmlinux 0xb1ad28e0	__gnu_mcount_nc
-EXPORT_SYMBOL vmlinux 0xb1bad469	path_is_under
 EXPORT_SYMBOL vmlinux 0xb1c3a01a	oops_in_progress
 EXPORT_SYMBOL vmlinux 0xb1cfd01c	drm_mode_create_tv_properties
 EXPORT_SYMBOL vmlinux 0xb1df45c8	task_ns_capable
