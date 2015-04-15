@@ -4,6 +4,25 @@ linux-ti-omap4 (3.2.0-1463.83) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.2.0-81.117 ]
+
+  * Release Tracking Bug
+    - LP: #1442215
+  * e1000e: 82579: workaround for link drop issue
+    - LP: #1425333
+  * e1000e: update workaround for 82579 intermittently disabled during
+    S0->Sx
+    - LP: #1425333
+  * e1000e: issues in Sx on 82577/8/9
+    - LP: #1425333
+  * e1000e: 82579 packet drop workaround
+    - LP: #1425333
+  * e1000e: Workaround for dropped packets in Gig/100 speeds on 82579
+    - LP: #1425333
+  * ipv6: Don't reduce hop limit for an interface
+    - LP: #1441103
+    - CVE-2015-2922
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Wed, 15 Apr 2015 08:44:44 -0500
 
 linux-ti-omap4 (3.2.0-1462.82) precise; urgency=low
