@@ -4,6 +4,34 @@ linux-ti-omap4 (3.2.0-1464.84) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.2.0-84.121 ]
+
+  * Release Tracking Bug
+    - LP: #1451968
+  * netfilter: nf_conntrack: reserve two bytes for nf_ct_ext->len
+    - LP: #1442080
+    - CVE-2014-9715
+
+  [ Ubuntu: 3.2.0-83.120 ]
+
+  * Release Tracking Bug
+    - LP: #1450003
+  * fs: take i_mutex during prepare_binprm for set[ug]id executables
+    - LP: #1447373
+    - CVE-2015-3339
+
+  [ Ubuntu: 3.2.0-82.119 ]
+
+  * Release Tracking Bug
+    - LP: #1449034
+  * Revert "e1000e: Workaround for dropped packets in Gig/100 speeds on
+    82579"
+  * Revert "e1000e: 82579 packet drop workaround"
+  * Revert "e1000e: issues in Sx on 82577/8/9"
+  * Revert "e1000e: update workaround for 82579 intermittently disabled
+    during S0->Sx"
+  * Revert "e1000e: 82579: workaround for link drop issue"
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Fri, 08 May 2015 16:19:43 +0200
 
 linux-ti-omap4 (3.2.0-1463.83) precise; urgency=low
