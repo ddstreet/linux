@@ -4,6 +4,16 @@ linux-ti-omap4 (3.2.0-1467.88) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.2.0-87.125 ]
+
+  * Release Tracking Bug
+    - LP: #1466575
+  * Revert "debugfs: leave freeing a symlink body until inode eviction"
+    - LP: #1465322
+  * vfs: read file_handle only once in handle_to_path
+    - LP: #1416503
+    - CVE-2015-1420
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Fri, 19 Jun 2015 16:02:38 +0200
 
 linux-ti-omap4 (3.2.0-1466.87) precise; urgency=low
