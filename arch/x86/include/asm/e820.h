@@ -12,6 +12,7 @@
 /* see comment in arch/x86/kernel/e820.c */
 extern struct e820map e820;
 extern struct e820map e820_saved;
+extern unsigned long last_page_frame_number;
 
 extern unsigned long pci_mem_start;
 extern int e820_any_mapped(u64 start, u64 end, unsigned type);

@@ -62,6 +62,7 @@
 #include <linux/hugetlb.h>
 #include <linux/sched/rt.h>
 
+#include <asm/e820.h>
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
@@ -1009,6 +1010,10 @@ int move_freepages_block(struct zone *zone, struct page *page,
 	if (!zone_spans_pfn(zone, start_pfn))
 		start_page = page;
 	if (!zone_spans_pfn(zone, end_pfn))
+		return 0;
+
+	/* Check if the end_pfn cross the last_pfn */
+	if (end_pfn >= last_page_frame_number)
 		return 0;
 
 	return move_freepages(zone, start_page, end_page, migratetype);

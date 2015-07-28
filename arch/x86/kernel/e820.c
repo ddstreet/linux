@@ -41,6 +41,7 @@
  */
 struct e820map e820;
 struct e820map e820_saved;
+unsigned long last_page_frame_number;
 
 /* For PCI or other memory-mapped resources */
 unsigned long pci_mem_start = 0xaeedbabe;
@@ -787,6 +788,10 @@ static unsigned long __init e820_end_pfn(unsigned long limit_pfn, unsigned type)
 	if (last_pfn > max_arch_pfn)
 		last_pfn = max_arch_pfn;
 
+	last_page_frame_number = last_pfn;
+
+	printk(KERN_INFO "e820: last_page_frame_number = %#lx\n",
+	       last_page_frame_number);
 	printk(KERN_INFO "e820: last_pfn = %#lx max_arch_pfn = %#lx\n",
 			 last_pfn, max_arch_pfn);
 	return last_pfn;
