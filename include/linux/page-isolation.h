@@ -25,7 +25,7 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
 			 bool skip_hwpoisoned_pages);
 void set_pageblock_migratetype(struct page *page, int migratetype);
 int move_freepages_block(struct zone *zone, struct page *page,
-				int migratetype);
+				int migratetype, int fallback_migratetype);
 int move_freepages(struct zone *zone,
 			  struct page *start_page, struct page *end_page,
 			  int migratetype);

@@ -206,6 +206,19 @@ static char * const zone_names[MAX_NR_ZONES] = {
 	 "Movable",
 };
 
+static char * const migratetype_names[MIGRATE_TYPES] = {
+	"Unmovable",
+	"Reclaimable",
+	"Movable",
+	"Reserve",
+#ifdef CONFIG_CMA
+	"CMA",
+#endif
+#ifdef CONFIG_MEMORY_ISOLATION
+	"Isolate",
+#endif
+};
+
 int min_free_kbytes = 1024;
 int user_min_free_kbytes;
 
@@ -995,7 +1008,7 @@ int move_freepages(struct zone *zone,
 }
 
 int move_freepages_block(struct zone *zone, struct page *page,
-				int migratetype)
+				int migratetype, int fallback_type)
 {
 	unsigned long start_pfn, end_pfn;
 	struct page *start_page, *end_page;
@@ -1012,9 +1025,37 @@ int move_freepages_block(struct zone *zone, struct page *page,
 	if (!zone_spans_pfn(zone, end_pfn))
 		return 0;
 
-	/* Check if the end_pfn cross the last_pfn */
-	if (end_pfn >= last_page_frame_number)
+	/* Check if the page_zone is equal or end_pfn cross the last_pfn */
+	if (unlikely(page_zone(start_page) != page_zone(end_page))) {
+		printk(KERN_ERR "page_zone(start_page) !="
+		      "page_zone(end_page)\n");
+
+		if (end_pfn >= last_page_frame_number)
+			printk(KERN_ERR "end_pfn >= last_page_frame_number\n");
+
+		printk(KERN_ERR "start_type:%d(%s), fallback_type%d(%s)\n",
+		       migratetype, migratetype_names[migratetype],
+		       fallback_type, migratetype_names[fallback_type]);
+
+		printk(KERN_ERR "move_freepages: Bogus zones: "
+		       "start_page[%p] end_page[%p] zone[%p](%s)\n",
+		       start_page, end_page, zone, zone->name);
+
+		printk(KERN_ERR "move_freepages: start_zone[%p] end_zone[%p]\n",
+		       page_zone(start_page), page_zone(end_page));
+
+		printk(KERN_ERR "move_freepages: start_zone[%s] end_zone[%s]\n",
+		       page_zone(start_page)->name, page_zone(end_page)->name);
+
+		printk(KERN_ERR "move_freepages: "
+		       "start_pfn[0x%lx] end_pfn[0x%lx]\n",
+		       page_to_pfn(start_page), page_to_pfn(end_page));
+
+		printk(KERN_ERR "move_freepages: start_nid[%d] end_nid[%d]\n",
+		       page_to_nid(start_page), page_to_nid(end_page));
+
 		return 0;
+	}
 
 	return move_freepages(zone, start_page, end_page, migratetype);
 }
@@ -1065,7 +1106,8 @@ static int try_to_steal_freepages(struct zone *zone, struct page *page,
 	    page_group_by_mobility_disabled) {
 		int pages;
 
-		pages = move_freepages_block(zone, page, start_type);
+		pages = move_freepages_block(zone, page, start_type,
+					     fallback_type);
 
 		/* Claim the whole block if over half of it is free */
 		if (pages >= (1 << (pageblock_order-1)) ||
@@ -4000,6 +4042,7 @@ static void setup_zone_migrate_reserve(struct zone *zone)
 				set_pageblock_migratetype(page,
 							MIGRATE_RESERVE);
 				move_freepages_block(zone, page,
+							MIGRATE_RESERVE,
 							MIGRATE_RESERVE);
 				reserve--;
 				continue;
@@ -4012,7 +4055,8 @@ static void setup_zone_migrate_reserve(struct zone *zone)
 		 */
 		if (block_migratetype == MIGRATE_RESERVE) {
 			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
-			move_freepages_block(zone, page, MIGRATE_MOVABLE);
+			move_freepages_block(zone, page, MIGRATE_MOVABLE,
+					     MIGRATE_MOVABLE);
 		}
 	}
 }
