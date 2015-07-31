@@ -4,6 +4,15 @@ linux-ti-omap4 (3.2.0-1469.90) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.2.0-89.127 ]
+
+  * Release Tracking Bug
+    - LP: #1478843
+  * udp: fix behavior of wrong checksums
+    - CVE-2015-5364, CVE-2015-5366
+  * sctp: fix ASCONF list handling
+    - CVE-2015-3212
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Fri, 31 Jul 2015 10:45:35 +0200
 
 linux-ti-omap4 (3.2.0-1468.89) precise; urgency=low
