@@ -84,6 +84,9 @@ struct netns_xfrm {
 	struct work_struct	flow_cache_gc_work;
 	struct work_struct	flow_cache_flush_work;
 	struct mutex		flow_flush_sem;
+#ifdef CONFIG_SYSCTL
+	struct ctl_table_header *flow_hdr;
+#endif
 };
 
 #endif

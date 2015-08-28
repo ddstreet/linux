@@ -256,6 +256,18 @@ static struct xfrm_policy_afinfo xfrm4_policy_afinfo = {
 };
 
 #ifdef CONFIG_SYSCTL
+static int xfrm4_sysctl_percpu(struct ctl_table *ctl, int write,
+			       void __user *buffer, size_t *lenp, loff_t *ppos)
+{
+	struct ctl_table tmp = *ctl;
+	struct dst_ops *dst = tmp.data;
+	int i = dst_entries_get_slow(dst);
+
+	tmp.data = &i;
+
+	return proc_dointvec(&tmp, write, buffer, lenp, ppos);
+}
+
 static struct ctl_table xfrm4_policy_table[] = {
 	{
 		.procname       = "xfrm4_gc_thresh",
@@ -263,6 +275,13 @@ static struct ctl_table xfrm4_policy_table[] = {
 		.maxlen         = sizeof(int),
 		.mode           = 0644,
 		.proc_handler   = proc_dointvec,
+	},
+	{
+		.procname       = "xfrm4_objects",
+		.data           = &init_net.xfrm.xfrm4_dst_ops,
+		.maxlen         = sizeof(int),
+		.mode           = 0444,
+		.proc_handler   = xfrm4_sysctl_percpu,
 	},
 	{ }
 };
@@ -279,6 +298,7 @@ static int __net_init xfrm4_net_init(struct net *net)
 			goto err_alloc;
 
 		table[0].data = &net->xfrm.xfrm4_dst_ops.gc_thresh;
+		table[1].data = &net->xfrm.xfrm4_dst_ops;
 	}
 
 	hdr = register_net_sysctl(net, "net/ipv4", table);

@@ -47,7 +47,8 @@ struct flow_flush_info {
 
 static struct kmem_cache *flow_cachep __read_mostly;
 
-#define flow_cache_hash_size(cache)	(1 << (cache)->hash_shift)
+#define flow_cache_hash_size(fc)	(1 << (fc)->hash_shift)
+#define flow_cache_low_watermark(fc)	((fc)->high_watermark >> 1)
 #define FLOW_HASH_RND_PERIOD		(10 * 60 * HZ)
 
 static void flow_cache_new_hashrnd(unsigned long arg)
@@ -55,8 +56,12 @@ static void flow_cache_new_hashrnd(unsigned long arg)
 	struct flow_cache *fc = (void *) arg;
 	int i;
 
+	get_online_cpus();
+
 	for_each_possible_cpu(i)
 		per_cpu_ptr(fc->percpu, i)->hash_rnd_recalc = 1;
+
+	put_online_cpus();
 
 	fc->rnd_timer.expires = jiffies + FLOW_HASH_RND_PERIOD;
 	add_timer(&fc->rnd_timer);
@@ -142,7 +147,7 @@ static void __flow_cache_shrink(struct flow_cache *fc,
 static void flow_cache_shrink(struct flow_cache *fc,
 			      struct flow_cache_percpu *fcp)
 {
-	int shrink_to = fc->low_watermark / flow_cache_hash_size(fc);
+	int shrink_to = flow_cache_low_watermark(fc) >> fc->hash_shift;
 
 	__flow_cache_shrink(fc, fcp, shrink_to);
 }
@@ -291,6 +296,7 @@ static void flow_cache_flush_tasklet(unsigned long data)
 						flow_cache_global);
 
 	fcp = this_cpu_ptr(fc->percpu);
+
 	for (i = 0; i < flow_cache_hash_size(fc); i++) {
 		hlist_for_each_entry_safe(fle, tmp,
 					  &fcp->hash_table[i], u.hlist) {
@@ -432,6 +438,92 @@ static int flow_cache_cpu(struct notifier_block *nfb,
 	return NOTIFY_OK;
 }
 
+#ifdef CONFIG_SYSCTL
+static int flow_cache_sysctl_percpu(struct ctl_table *ctl, int write,
+				    void __user *buffer,
+				    size_t *lenp, loff_t *ppos)
+{
+	struct ctl_table tmp = *ctl;
+	struct flow_cache_percpu *fcp;
+	unsigned int cpu;
+	int i = 0;
+
+	get_online_cpus();
+
+	for_each_online_cpu(cpu) {
+		fcp = per_cpu_ptr(*(void **)ctl->data, cpu);
+		i += fcp->hash_count;
+	}
+
+	put_online_cpus();
+
+	tmp.data = &i;
+
+	return proc_dointvec(&tmp, write, buffer, lenp, ppos);
+}
+
+static struct ctl_table flow_cache_policy_table[] = {
+	{
+		.procname       = "flow_cache_thresh",
+		.data           = &init_net.xfrm.flow_cache_global.high_watermark,
+		.maxlen         = sizeof(int),
+		.mode           = 0644,
+		.proc_handler   = proc_dointvec,
+	},
+	{
+		.procname       = "flow_cache_objects",
+		.data           = &init_net.xfrm.flow_cache_global.percpu,
+		.maxlen         = sizeof(int),
+		.mode           = 0444,
+		.proc_handler   = flow_cache_sysctl_percpu,
+	},
+	{ }
+};
+
+static int flow_cache_register_sysctl(struct net *net)
+{
+	struct ctl_table *table;
+	struct ctl_table_header *hdr;
+
+	table = flow_cache_policy_table;
+	if (!net_eq(net, &init_net)) {
+		table = kmemdup(table, sizeof(flow_cache_policy_table),
+				GFP_KERNEL);
+		if (!table)
+			return -ENOMEM;
+
+		table[0].data = &net->xfrm.flow_cache_global.high_watermark;
+		table[1].data = &net->xfrm.flow_cache_global.percpu;
+	}
+
+	hdr = register_net_sysctl(net, "net/core", table);
+	if (!hdr) {
+		if (!net_eq(net, &init_net))
+			kfree(table);
+		return -ENOMEM;
+	}
+	net->xfrm.flow_hdr = hdr;
+
+	return 0;
+}
+
+static void flow_cache_unregister_sysctl(struct net *net)
+{
+	struct ctl_table *table;
+
+	if (!net->xfrm.flow_hdr)
+		return;
+
+	table = net->xfrm.flow_hdr->ctl_table_arg;
+	unregister_net_sysctl_table(net->xfrm.flow_hdr);
+	if (!net_eq(net, &init_net))
+		kfree(table);
+}
+#else
+#define flow_cache_register_sysctl(net) do { } while(0)
+#define flow_cache_unregister_sysctl(net) do { } while(0)
+#endif
+
 int flow_cache_init(struct net *net)
 {
 	int i;
@@ -448,7 +540,6 @@ int flow_cache_init(struct net *net)
 	mutex_init(&net->xfrm.flow_flush_sem);
 
 	fc->hash_shift = 10;
-	fc->low_watermark = 2 * flow_cache_hash_size(fc);
 	fc->high_watermark = 4 * flow_cache_hash_size(fc);
 
 	fc->percpu = alloc_percpu(struct flow_cache_percpu);
@@ -467,6 +558,11 @@ int flow_cache_init(struct net *net)
 	__register_hotcpu_notifier(&fc->hotcpu_notifier);
 
 	cpu_notifier_register_done();
+
+	if (flow_cache_register_sysctl(net)) {
+		cpu_notifier_register_begin();
+		goto err;
+	}
 
 	setup_timer(&fc->rnd_timer, flow_cache_new_hashrnd,
 		    (unsigned long) fc);
@@ -495,6 +591,8 @@ void flow_cache_fini(struct net *net)
 {
 	int i;
 	struct flow_cache *fc = &net->xfrm.flow_cache_global;
+
+	flow_cache_unregister_sysctl(net);
 
 	del_timer_sync(&fc->rnd_timer);
 	unregister_hotcpu_notifier(&fc->hotcpu_notifier);
