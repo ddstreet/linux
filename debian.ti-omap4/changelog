@@ -4,6 +4,560 @@ linux-ti-omap4 (3.2.0-1471.92) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.2.0-91.129 ]
+
+  * Release Tracking Bug
+    - LP: #1493780
+  * Bluetooth: ath3k: Add support Atheros AR5B195 combo Mini PCIe card
+    - LP: #1490923
+  * Drivers: hv: vmbus: Fix a bug in the error path in vmbus_open()
+    - LP: #1490923
+  * e1000: add dummy allocator to fix race condition between mtu change and
+    netpoll
+    - LP: #1490923
+  * KVM: s390: Zero out current VMDB of STSI before including level3 data.
+    - LP: #1490923
+  * usb: musb: core: fix TX/RX endpoint order
+    - LP: #1490923
+  * compal-laptop: Check return value of power_supply_register
+    - LP: #1490923
+  * pinctrl: fix example .get_group_pins implementation signature
+    - LP: #1490923
+  * drm/radeon: fix doublescan modes (v2)
+    - LP: #1490923
+  * lib: memzero_explicit: use barrier instead of OPTIMIZER_HIDE_VAR
+    - LP: #1490923
+  * ASoC: wm8741: Fix rates constraints values
+    - LP: #1490923
+  * cdc-wdm: fix endianness bug in debug statements
+    - LP: #1490923
+  * staging: panel: fix lcd type
+    - LP: #1490923
+  * UBI: account for bitflips in both the VID header and data
+    - LP: #1490923
+  * UBI: fix out of bounds write
+    - LP: #1490923
+  * UBI: initialize LEB number variable
+    - LP: #1490923
+  * UBI: fix check for "too many bytes"
+    - LP: #1490923
+  * Drivers: hv: vmbus: Don't wait after requesting offers
+    - LP: #1490923
+  * Btrfs: fix log tree corruption when fs mounted with -o discard
+    - LP: #1490923
+  * btrfs: don't accept bare namespace as a valid xattr
+    - LP: #1490923
+  * ARM: 8320/1: fix integer overflow in ELF_ET_DYN_BASE
+    - LP: #1490923
+  * rtlwifi: rtl8192cu: Add new USB ID
+    - LP: #1490923
+  * MIPS: Hibernate: flush TLB entries earlier
+    - LP: #1490923
+  * ASoC: cs4271: Increase delay time after reset
+    - LP: #1490923
+  * ext4: make fsync to sync parent dir in no-journal for real this time
+    - LP: #1490923
+  * jhash: Update jhash_[321]words functions to use correct initval
+    - LP: #1490923
+  * Input: elantech - fix absolute mode setting on some ASUS laptops
+    - LP: #1490923
+  * RDS: Documentation: Document AF_RDS, PF_RDS and SOL_RDS correctly.
+    - LP: #1490923
+  * selinux/nlmsg: add XFRM_MSG_GETSPDINFO
+    - LP: #1490923
+  * selinux/nlmsg: add XFRM_MSG_[NEW|GET]SADINFO
+    - LP: #1490923
+  * x86/iommu: Fix header comments regarding standard and _FINISH macros
+    - LP: #1490923
+  * scsi: storvsc: Fix a bug in copy_from_bounce_buffer()
+    - LP: #1490923
+  * ALSA: emu10k1: don't deadlock in proc-functions
+    - LP: #1490923
+  * powerpc: Fix missing L2 cache size in /sys/devices/system/cpu
+    - LP: #1490923
+  * sg_start_req(): make sure that there's not too many elements in iovec
+    - LP: #1490923
+  * selinux/nlmsg: add XFRM_MSG_REPORT
+    - LP: #1490923
+  * selinux/nlmsg: add XFRM_MSG_MIGRATE
+    - LP: #1490923
+  * selinux/nlmsg: add XFRM_MSG_MAPPING
+    - LP: #1490923
+  * s390/hibernate: fix save and restore of kernel text section
+    - LP: #1490923
+  * Btrfs: fix inode eviction infinite loop after cloning into it
+    - LP: #1490923
+  * powerpc/perf: Cap 64bit userspace backtraces to PERF_MAX_STACK_DEPTH
+    - LP: #1490923
+  * ACPICA: Utilities: split IO address types from data type models.
+    - LP: #1490923
+  * fs/binfmt_elf.c: fix bug in loading of PIE binaries
+    - LP: #1490923
+  * IB/core: disallow registering 0-sized memory region
+    - LP: #1490923
+  * IB/core: don't disallow registering region starting at 0x0
+    - LP: #1490923
+  * IB/mlx4: Fix WQE LSO segment calculation
+    - LP: #1490923
+  * megaraid_sas: use raw_smp_processor_id()
+    - LP: #1490923
+  * firmware/ihex2fw.c: restore missing default in switch statement
+    - LP: #1490923
+  * ptrace: fix race between ptrace_resume() and wait_task_stopped()
+    - LP: #1490923
+  * memstick: mspro_block: add missing curly braces
+    - LP: #1490923
+  * KVM: VMX: Preserve host CR4.MCE value while in guest mode.
+    - LP: #1490923
+  * writeback: use |1 instead of +1 to protect against div by zero
+    - LP: #1490923
+  * libata: Add helper to determine when PHY events should be ignored
+    - LP: #1490923
+  * libata: Ignore spurious PHY event on LPM policy change
+    - LP: #1490923
+  * ALSA: emu10k1: Fix card shortname string buffer overflow
+    - LP: #1490923
+  * ALSA: emux: Fix mutex deadlock at unloading
+    - LP: #1490923
+  * 3w-sas: fix command completion race
+    - LP: #1490923
+  * 3w-xxxx: fix command completion race
+    - LP: #1490923
+  * 3w-9xxx: fix command completion race
+    - LP: #1490923
+  * cdc-acm: prevent infinite loop when parsing CDC headers.
+    - LP: #1490923
+  * rtlwifi: rtl8192cu: Fix kernel deadlock
+    - LP: #1490923
+  * serial: xilinx: Use platform_get_irq to get irq description structure
+    - LP: #1490923
+  * serial: of-serial: Remove device_type = "serial" registration
+    - LP: #1490923
+  * ALSA: emux: Fix mutex deadlock in OSS emulation
+    - LP: #1490923
+  * ALSA: emu10k1: Emu10k2 32 bit DMA mode
+    - LP: #1490923
+  * USB: cp210x: add ID for KCF Technologies PRN device
+    - LP: #1490923
+  * USB: pl2303: Remove support for Samsung I330
+    - LP: #1490923
+  * xen-pciback: Add name prefix to global 'permissive' variable
+    - LP: #1490923
+  * gpio: unregister gpiochip device before removing it
+    - LP: #1490923
+  * gpio: sysfs: fix memory leaks and device hotplug
+    - LP: #1490923
+  * powerpc/pseries: Correct cpu affinity for dlpar added cpus
+    - LP: #1490923
+  * ext4: move check under lock scope to close a race.
+    - LP: #1490923
+  * mmc: core: add missing pm event in mmc_pm_notify to fix hib restore
+    - LP: #1490923
+  * nfsd: fix the check for confirmed openowner in
+    nfs4_preprocess_stateid_op
+    - LP: #1490923
+  * nilfs2: fix sanity check of btree level in nilfs_btree_root_broken()
+    - LP: #1490923
+  * ocfs2: dlm: fix race between purge and get lock resource
+    - LP: #1490923
+  * ACPI / init: Fix the ordering of acpi_reserve_resources()
+    - LP: #1490923
+  * md/raid5: don't record new size if resize_stripes fails.
+    - LP: #1490923
+  * ipvs: fix memory leak in ip_vs_ctl.c
+    - LP: #1490923
+  * xhci: fix isoc endpoint dequeue from advancing too far on transaction
+    error
+    - LP: #1490923
+  * xhci: Solve full event ring by increasing TRBS_PER_SEGMENT to 256
+    - LP: #1490923
+  * xhci: gracefully handle xhci_irq dead device
+    - LP: #1490923
+  * usb-storage: Add NO_WP_DETECT quirk for Lacie 059f:0651 devices
+    - LP: #1490923
+  * ahci: avoton port-disable reset-quirk
+    - LP: #1490923
+  * mac80211: move WEP tailroom size check
+    - LP: #1490923
+  * KVM: MMU: fix CR4.SMEP=1, CR0.WP=0 with shadow pages
+    - LP: #1490923
+  * ASoC: dapm: Modify widget stream name according to prefix
+    - LP: #1490923
+  * ASoC: wm8960: fix "RINPUT3" audio route error
+    - LP: #1490923
+  * ASoC: wm8994: correct BCLK DIV 348 to 384
+    - LP: #1490923
+  * Input: elantech - fix semi-mt protocol for v3 HW
+    - LP: #1490923
+  * powerpc: Align TOC to 256 bytes
+    - LP: #1490923
+  * dmi_scan: refactor dmi_scan_machine(), {smbios,dmi}_present()
+    - LP: #1490923
+  * firmware: dmi_scan: Fix ordering of product_uuid
+    - LP: #1490923
+  * ext4: check for zero length extent explicitly
+    - LP: #1490923
+  * jbd2: fix r_count overflows leading to buffer overflow in journal
+    recovery
+    - LP: #1490923
+  * ALSA: hda - Add Conexant codecs CX20721, CX20722, CX20723 and CX20724
+    - LP: #1454656, #1490923
+  * sd: Disable support for 256 byte/sector disks
+    - LP: #1490923
+  * xen/events: don't bind non-percpu VIRQs with percpu chip
+    - LP: #1490923
+  * USB: serial: ftdi_sio: Add support for a Motion Tracker Development
+    Board
+    - LP: #1490923
+  * crypto: s390/ghash - Fix incorrect ghash icv buffer handling.
+    - LP: #1490923
+  * bridge: fix parsing of MLDv2 reports
+    - LP: #1490923
+  * lguest: fix out-by-one error in address checking.
+    - LP: #1490923
+  * fs/binfmt_elf.c:load_elf_binary(): return -EINVAL on zero-length
+    mappings
+    - LP: #1490923
+  * fs, omfs: add NULL terminator in the end up the token list
+    - LP: #1490923
+  * d_walk() might skip too much
+    - LP: #1490923
+  * ALSA: usb-audio: Fix invalid volume resolution for Logitech HD Webcam
+    C525
+    - LP: #1490923
+  * ALSA: usb-audio: Add mic volume fix quirk for Logitech Quickcam Fusion
+    - LP: #1490923
+  * target/pscsi: Don't leak scsi_host if hba is VIRTUAL_HOST
+    - LP: #1490923
+  * x86_64: Fix strnlen_user() to not touch memory after specified maximum
+    - LP: #1490923
+  * Input: elantech - fix detection of touchpads where the revision matches
+    a known rate
+    - LP: #1490923
+  * ALSA: usb-audio: add MAYA44 USB+ mixer control names
+    - LP: #1490923
+  * ALSA: usb-audio: fix missing input volume controls in MAYA44 USB(+)
+    - LP: #1490923
+  * USB: cp210x: add ID for HubZ dual ZigBee and Z-Wave dongle
+    - LP: #1490923
+  * Input: elantech - add support for newer (August 2013) devices
+    - LP: #1490923
+  * Input: elantech - add support for newer elantech touchpads
+    - LP: #1490923
+  * Input: elantech - support new ICs types for version 4
+    - LP: #1490923
+  * Input: elantech - add new icbody type
+    - LP: #1490923
+  * MIPS: Fix enabling of DEBUG_STACKOVERFLOW
+    - LP: #1490923
+  * bridge: fix multicast router rlist endless loop
+    - LP: #1490923
+  * ring-buffer-benchmark: Fix the wrong sched_priority of producer
+    - LP: #1490923
+  * tracing: Have filter check for balanced ops
+    - LP: #1490923
+  * ipvs: kernel oops - do_ip_vs_get_ctl
+    - LP: #1490923
+  * of: Add of_property_match_string() to find index into a string list
+    - LP: #1490923
+  * dt: Add empty of_property_match_string() function
+    - LP: #1490923
+  * powerpc: Make logical to real cpu mapping code endian safe
+    - LP: #1490923
+  * powerpc: Don't skip ePAPR spin-table CPUs
+    - LP: #1490923
+  * net: dp83640: fix broken calibration routine.
+    - LP: #1490923
+  * unix/caif: sk_socket can disappear when state is unlocked
+    - LP: #1490923
+  * xen: netback: read hotplug script once at start of day.
+    - LP: #1490923
+  * bridge: fix br_stp_set_bridge_priority race conditions
+    - LP: #1490923
+  * packet: read num_members once in packet_rcv_fanout()
+    - LP: #1490923
+  * packet: avoid out of bounds read in round robin fanout
+    - LP: #1490923
+  * neigh: do not modify unlinked entries
+    - LP: #1490923
+  * sctp: Fix race between OOTB responce and route removal
+    - LP: #1490923
+  * slub: refactoring unfreeze_partials()
+    - LP: #1490923
+  * net: socket: Fix the wrong returns for recvmsg and sendmsg
+    - LP: #1490923
+  * config: Enable NEED_DMA_MAP_STATE by default when SWIOTLB is selected
+    - LP: #1490923
+  * Fix sb_edac compilation with 32 bits kernels
+    - LP: #1490923
+  * sb_edac: Fix erroneous bytes->gigabytes conversion
+    - LP: #1490923
+  * x86/reboot: Fix a warning message triggered by stop_other_cpus()
+    - LP: #1490923
+  * include/linux/sched.h: don't use task->pid/tgid in
+    same_thread_group/has_group_leader_pid
+    - LP: #1490923
+  * __ptrace_may_access() should not deny sub-threads
+    - LP: #1490923
+  * powerpc+sparc64/mm: Remove hack in mmap randomize layout
+    - LP: #1490923
+  * softirq: reduce latencies
+    - LP: #1490923
+  * Fix lockup related to stop_machine being stuck in __do_softirq.
+    - LP: #1490923
+  * MIPS: Fix race condition in lazy cache flushing.
+    - LP: #1490923
+  * MIPS: Octeon: Remove udelay() causing huge IRQ latency
+    - LP: #1490923
+  * MIPS: Fix cpu_has_mips_r2_exec_hazard.
+    - LP: #1490923
+  * MIPS: Octeon: Delete override of cpu_has_mips_r2_exec_hazard.
+    - LP: #1490923
+  * UBI: fix soft lockup in ubi_check_volume()
+    - LP: #1490923
+  * parisc: Provide __ucmpdi2 to resolve undefined references in 32 bit
+    builds.
+    - LP: #1490923
+  * staging: line6: avoid __sync_fetch_and_{and,or}
+    - LP: #1490923
+  * sparc32,leon: fix leon build
+    - LP: #1490923
+  * ACPICA: Tables: Change acpi_find_root_pointer() to use
+    acpi_physical_address.
+    - LP: #1490923
+  * ACPICA: Debug output: Update output for Processor object.
+    - LP: #1490923
+  * ACPICA: Utilities: Cleanup to convert physical address printing
+    formats.
+    - LP: #1490923
+  * ACPICA: Utilities: Cleanup to remove useless ACPI_PRINTF/FORMAT_xxx
+    helpers.
+    - LP: #1490923
+  * Linux 3.2.70
+    - LP: #1490923
+  * hrtimer: Allow concurrent hrtimer_start() for self restarting timers
+    - LP: #1490931
+  * s5h1420: fix a buffer overflow when checking userspace params
+    - LP: #1490931
+  * cx24116: fix a buffer overflow when checking userspace params
+    - LP: #1490931
+  * mtd: fix: avoid race condition when accessing mtd->usecount
+    - LP: #1490931
+  * crypto: talitos - avoid memleak in talitos_alg_alloc()
+    - LP: #1490931
+  * ASoC: wm8737: Fixup setting VMID Impedance control register
+    - LP: #1490931
+  * ASoC: wm8903: Fix define for WM8903_VMID_RES_250K
+    - LP: #1490931
+  * ASoC: wm8955: Fix setting wrong register for WM8955_K_8_0_MASK bits
+    - LP: #1490931
+  * pktgen: adjust spacing in proc file interface output
+    - LP: #1490931
+  * tty/serial: at91: RS485 mode: 0 is valid for delay_rts_after_send
+    - LP: #1490931
+  * drm/radeon: take the mode_config mutex when dealing with hpds (v2)
+    - LP: #1490931
+  * usb: dwc3: gadget: return error if command sent to DEPCMD register
+    fails
+    - LP: #1490931
+  * rcu: Correctly handle non-empty Tiny RCU callback list with none ready
+    - LP: #1490931
+  * mtd: dc21285: use raw spinlock functions for nw_gpio_lock
+    - LP: #1490931
+  * staging: rtl8712: prevent buffer overrun in recvbuf2recvframe
+    - LP: #1490931
+  * usb: core: Fix USB 3.0 devices lost in NOTATTACHED state after a hub
+    port reset
+    - LP: #1490931
+  * staging: vt6655: device_rx_srv check sk_buff is NULL
+    - LP: #1490931
+  * fixing infinite OPEN loop in 4.0 stateid recovery
+    - LP: #1490931
+  * NFS: Fix size of NFSACL SETACL operations
+    - LP: #1490931
+  * SUNRPC: Fix a memory leak in the backchannel code
+    - LP: #1490931
+  * ipr: Increase default adapter init stage change timeout
+    - LP: #1490931
+  * ath3k: Add support of 0489:e076 AR3012 device
+    - LP: #1462614, #1490931
+  * ath3k: add support of 13d3:3474 AR3012 device
+    - LP: #1427680, #1490931
+  * ath9k: fix DMA stop sequence for AR9003+
+    - LP: #1490931
+  * cdc-acm: Add support of ATOL FPrint fiscal printers
+    - LP: #1490931
+  * regulator: core: fix constraints output buffer
+    - LP: #1490931
+  * dmaengine: mv_xor: bug fix for racing condition in descriptors cleanup
+    - LP: #1490931
+  * ASoC: wm8960: the enum of "DAC Polarity" should be wm8960_enum[1]
+    - LP: #1490931
+  * ext4: fix race between truncate and __ext4_journalled_writepage()
+    - LP: #1490931
+  * Disable write buffering on Toshiba ToPIC95
+    - LP: #1490931
+  * jbd2: split updating of journal superblock and marking journal empty
+    - LP: #1490931
+  * jbd2: issue cache flush after checkpointing even with internal journal
+    - LP: #1490931
+  * jbd2: use GFP_NOFS in jbd2_cleanup_journal_tail()
+    - LP: #1490931
+  * jbd2: fix ocfs2 corrupt when updating journal superblock fails
+    - LP: #1490931
+  * ideapad: fix software rfkill setting
+    - LP: #1490931
+  * mmc: card: Fixup request missing in mmc_blk_issue_rw_rq
+    - LP: #1490931
+  * nfs: increase size of EXCHANGE_ID name string buffer
+    - LP: #1490931
+  * Bluetooth: ath3k: add support of 04ca:300f AR3012 device
+    - LP: #1449730, #1490931
+  * ext4: call sync_blockdev() before invalidate_bdev() in put_super()
+    - LP: #1490931
+  * iio: DAC: ad5624r_spi: fix bit shift of output data value
+    - LP: #1490931
+  * ext4: don't retry file block mapping on bigalloc fs with non-extent
+    file
+    - LP: #1490931
+  * watchdog: omap: assert the counter being stopped before reprogramming
+    - LP: #1490931
+  * NET: ROSE: Don't dereference NULL neighbour pointer.
+    - LP: #1490931
+  * bridge: multicast: restore router configuration on port link down/up
+    - LP: #1490931
+  * fs: Fix S_NOSEC handling
+    - LP: #1490931
+  * stmmac: troubleshoot unexpected bits in des0 & des1
+    - LP: #1490931
+  * mm: kmemleak: allow safe memory scanning during kmemleak disabling
+    - LP: #1490931
+  * dell-laptop: Fix allocating & freeing SMI buffer page
+    - LP: #1490931
+  * tracing/filter: Do not WARN on operand count going below zero
+    - LP: #1490931
+  * tracing/filter: Do not allow infix to exceed end of string
+    - LP: #1490931
+  * __bitmap_parselist: fix bug in empty string handling
+    - LP: #1490931
+  * agp/intel: Fix typo in needs_ilk_vtd_wa()
+    - LP: #1490931
+  * Btrfs: use kmem_cache_free when freeing entry in inode cache
+    - LP: #1490931
+  * Btrfs: fix race between caching kthread and returning inode to inode
+    cache
+    - LP: #1490931
+  * crush: fix a bug in tree bucket decode
+    - LP: #1490931
+  * fuse: initialize fc->release before calling it
+    - LP: #1490931
+  * ALSA: usb-audio: Add MIDI support for Steinberg MI2/MI4
+    - LP: #1490931
+  * ACPICA: Tables: Fix an issue that FACS initialization is performed
+    twice
+    - LP: #1490931
+  * fs/buffer.c: support buffer cache allocations with gfp modifiers
+    - LP: #1490931
+  * bufferhead: Add _gfp version for sb_getblk()
+    - LP: #1490931
+  * ext4: avoid deadlocks in the writeback path by using sb_getblk_gfp
+    - LP: #1490931
+  * netfilter: bridge: don't leak skb in error paths
+    - LP: #1490931
+  * KVM: x86: make vapics_in_nmi_mode atomic
+    - LP: #1490931
+  * KVM: x86: properly restore LVT0
+    - LP: #1490931
+  * 9p: forgetting to cancel request on interrupted zero-copy RPC
+    - LP: #1490931
+  * ext4: replace open coded nofail allocation in ext4_free_blocks()
+    - LP: #1490931
+  * dm btree remove: fix bug in redistribute3
+    - LP: #1490931
+  * dm thin: allocate the cell_sort_array dynamically
+    - LP: #1490931
+  * USB: cp210x: add ID for Aruba Networks controllers
+    - LP: #1490931
+  * dm btree: silence lockdep lock inversion in dm_btree_del()
+    - LP: #1490931
+  * s390/sclp: clear upper register halves in _sclp_print_early
+    - LP: #1490931
+  * drm: Check crtc x and y coordinates
+    - LP: #1490931
+  * drm: add a check for x/y in drm_mode_setcrtc
+    - LP: #1490931
+  * rtnetlink: verify IFLA_VF_INFO attributes before passing them to driver
+    - LP: #1490931
+  * mm: avoid setting up anonymous pages into file mapping
+    - LP: #1490931
+  * net: do not process device backlog during unregistration
+    - LP: #1490931
+  * net: call rcu_read_lock early in process_backlog
+    - LP: #1490931
+  * 9p: don't leave a half-initialized inode sitting around
+    - LP: #1490931
+  * s390/process: fix sfpc inline assembly
+    - LP: #1490931
+  * Btrfs: fix file corruption after cloning inline extents
+    - LP: #1490931
+  * rds: rds_ib_device.refcount overflow
+    - LP: #1490931
+  * ata: pmp: add quirk for Marvell 4140 SATA PMP
+    - LP: #1490931
+  * libata: add ATA_HORKAGE_BROKEN_FPDMA_AA quirk for HP 250GB SATA disk
+    VB0250EAVER
+    - LP: #1490931
+  * libata: add ATA_HORKAGE_NOTRIM
+    - LP: #1490931
+  * libata: force disable trim for SuperSSpeed S238
+    - LP: #1490931
+  * libata: increase the timeout when setting transfer mode
+    - LP: #1490931
+  * datagram: Factor out sk queue referencing
+    - LP: #1490931
+  * drm/radeon: Don't flush the GART TLB if rdev->gart.ptr == NULL
+    - LP: #1490931
+  * mac80211: clear subdir_stations when removing debugfs
+    - LP: #1490931
+  * inet: frags: fix defragmented packet's IP header for af_packet
+    - LP: #1490931
+  * usb: dwc3: Reset the transfer resource index on SET_INTERFACE
+    - LP: #1490931
+  * netfilter: nf_conntrack: Support expectations in different zones
+    - LP: #1490931
+  * usb: xhci: Bugfix for NULL pointer deference in xhci_endpoint_init()
+    function
+    - LP: #1490931
+  * xhci: Calculate old endpoints correctly on device reset
+    - LP: #1490931
+  * xhci: report U3 when link is in resume state
+    - LP: #1490931
+  * xhci: do not report PLC when link is in internal resume state
+    - LP: #1490931
+  * usb-storage: ignore ZTE MF 823 card reader in mode 0x1225
+    - LP: #1490931
+  * tile: use free_bootmem_late() for initrd
+    - LP: #1490931
+  * Input: usbtouchscreen - avoid unresponsive TSC-30 touch screen
+    - LP: #1490931
+  * md/raid1: fix test for 'was read error from last working device'.
+    - LP: #1490931
+  * iscsi-target: Fix use-after-free during TPG session shutdown
+    - LP: #1490931
+  * niu: don't count tx error twice in case of headroom realloc fails
+    - LP: #1490931
+  * vhost: actually track log eventfd file
+    - LP: #1490931
+  * ALSA: usb-audio: add dB range mapping for some devices
+    - LP: #1490931
+  * drm/radeon/combios: add some validation of lvds values
+    - LP: #1490931
+  * x86/xen: Probe target addresses in set_aliased_prot() before the
+    hypercall
+    - LP: #1490931
+  * Linux 3.2.71
+    - LP: #1490931
+
  -- Luis Henriques <luis.henriques@canonical.com>  Mon, 14 Sep 2015 13:28:39 +0100
 
 linux-ti-omap4 (3.2.0-1470.91) precise; urgency=low
