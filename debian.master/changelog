@@ -1,3 +1,12 @@
+linux (3.13.0-64.104hf83587v20150918b1) trusty; urgency=medium
+
+  [ Dan Streetman ]
+
+  * HOTFIX: mm crash in move_freepages
+    - ESCALATION: #83587
+
+ -- Dan Streetman <dan.streetman@canonical.com>  Fri, 18 Sep 2015 15:24:58 -0400
+
 linux (3.13.0-64.104) trusty; urgency=low
 
   [ Luis Henriques ]
