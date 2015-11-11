@@ -4638,6 +4638,7 @@ EXPORT_SYMBOL vmlinux 0x9c04723f	netdev_rx_csum_fault
 EXPORT_SYMBOL vmlinux 0x9c092c84	snd_timer_interrupt
 EXPORT_SYMBOL vmlinux 0x9c0b4171	netif_device_detach
 EXPORT_SYMBOL vmlinux 0x9c1158e1	drm_mm_init
+EXPORT_SYMBOL vmlinux 0x9c1d80c1	__ip4_datagram_connect
 EXPORT_SYMBOL vmlinux 0x9c276b64	jbd2_journal_abort
 EXPORT_SYMBOL vmlinux 0x9c53d70a	follow_pfn
 EXPORT_SYMBOL vmlinux 0x9c56b71d	input_mt_report_pointer_emulation
