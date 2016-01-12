@@ -5263,6 +5263,7 @@ EXPORT_SYMBOL vmlinux 0xc0823e4c	twl_i2c_write
 EXPORT_SYMBOL vmlinux 0xc098a6c9	register_key_type
 EXPORT_SYMBOL vmlinux 0xc0a6a8c5	omap_set_dma_dest_burst_mode
 EXPORT_SYMBOL vmlinux 0xc0a98385	profile_pc
+EXPORT_SYMBOL vmlinux 0xc0b1b70b	skb_copy_and_csum_datagram_iovec
 EXPORT_SYMBOL vmlinux 0xc0b2494c	vfsmount_lock_lock_init
 EXPORT_SYMBOL vmlinux 0xc0e3b182	hostap_80211_rx
 EXPORT_SYMBOL vmlinux 0xc0ea63de	notify_unregister_event_single
@@ -5722,7 +5723,6 @@ EXPORT_SYMBOL vmlinux 0xdb4292e4	omap_set_dma_params
 EXPORT_SYMBOL vmlinux 0xdb4e72df	inc_zone_page_state
 EXPORT_SYMBOL vmlinux 0xdb68bbad	rfkill_destroy
 EXPORT_SYMBOL vmlinux 0xdb760f52	__kfifo_free
-EXPORT_SYMBOL vmlinux 0xdb781926	skb_copy_and_csum_datagram_iovec
 EXPORT_SYMBOL vmlinux 0xdb7fa54b	skb_seq_read
 EXPORT_SYMBOL vmlinux 0xdb864d65	iov_iter_single_seg_count
 EXPORT_SYMBOL vmlinux 0xdb8f4f82	scsi_calculate_bounce_limit
