@@ -1,9 +1,33 @@
-linux-lts-trusty (3.13.0-78.122~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-79.123~precise1) precise; urgency=low
+
+  [ Seth Forshee ]
+
+  * SAUCE: cred: Add clone_cred() interface
+    - LP: #1534961, #1535150
+    - CVE-2016-1575 CVE-2016-1576
+  * SAUCE: overlayfs: Use mounter's credentials instead of full kernel
+    credentials
+    - LP: #1534961, #1535150
+    - CVE-2016-1575 CVE-2016-1576
+  * SAUCE: overlayfs: Skip permission checking for trusted.overlayfs.*
+    xattrs
+    - LP: #1534961, #1535150
+    - CVE-2016-1575 CVE-2016-1576
+  * SAUCE: overlayfs: Be more careful about copying up sxid files
+    - LP: #1534961, #1535150
+    - CVE-2016-1575 CVE-2016-1576
+  * SAUCE: overlayfs: Propogate nosuid from lower and upper mounts
+    - LP: #1534961, #1535150
+    - CVE-2016-1575 CVE-2016-1576
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 19 Feb 2016 13:26:22 +0000
+
+linux (3.13.0-78.122) trusty; urgency=low
 
   [ Brad Figg ]
 
   * Release Tracking Bug
-    - LP: #1540752
+    - LP: #1540559
 
   [ Eric Dumazet ]
 
