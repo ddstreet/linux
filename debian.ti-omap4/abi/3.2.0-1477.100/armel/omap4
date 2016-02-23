@@ -5258,7 +5258,6 @@ EXPORT_SYMBOL vmlinux 0xc0823e4c	twl_i2c_write
 EXPORT_SYMBOL vmlinux 0xc098a6c9	register_key_type
 EXPORT_SYMBOL vmlinux 0xc0a6a8c5	omap_set_dma_dest_burst_mode
 EXPORT_SYMBOL vmlinux 0xc0a98385	profile_pc
-EXPORT_SYMBOL vmlinux 0xc0b1b70b	skb_copy_and_csum_datagram_iovec
 EXPORT_SYMBOL vmlinux 0xc0b2494c	vfsmount_lock_lock_init
 EXPORT_SYMBOL vmlinux 0xc0e3b182	hostap_80211_rx
 EXPORT_SYMBOL vmlinux 0xc0ea63de	notify_unregister_event_single
@@ -5717,6 +5716,7 @@ EXPORT_SYMBOL vmlinux 0xdb4292e4	omap_set_dma_params
 EXPORT_SYMBOL vmlinux 0xdb4e72df	inc_zone_page_state
 EXPORT_SYMBOL vmlinux 0xdb68bbad	rfkill_destroy
 EXPORT_SYMBOL vmlinux 0xdb760f52	__kfifo_free
+EXPORT_SYMBOL vmlinux 0xdb781926	skb_copy_and_csum_datagram_iovec
 EXPORT_SYMBOL vmlinux 0xdb7fa54b	skb_seq_read
 EXPORT_SYMBOL vmlinux 0xdb864d65	iov_iter_single_seg_count
 EXPORT_SYMBOL vmlinux 0xdb8f4f82	scsi_calculate_bounce_limit
@@ -6729,13 +6729,13 @@ EXPORT_SYMBOL_GPL drivers/mfd/wm8400-core 0xb8df4e0a	wm8400_reset_codec_reg_cach
 EXPORT_SYMBOL_GPL drivers/mfd/wm8400-core 0xf1d5e0dc	wm8400_reg_read
 EXPORT_SYMBOL_GPL drivers/misc/eeprom/eeprom_93cx6 0x2df115d4	eeprom_93cx6_multiread
 EXPORT_SYMBOL_GPL drivers/misc/eeprom/eeprom_93cx6 0x63d14d2f	eeprom_93cx6_read
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x599da6fc	enclosure_for_each_device
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x7d31ed75	enclosure_component_register
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xb720ec1a	enclosure_unregister
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xd20745b6	enclosure_find
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xd80ed7b2	enclosure_register
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xf2f10b42	enclosure_remove_device
-EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xfbd082f6	enclosure_add_device
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x33c73adb	enclosure_add_device
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x4a468df7	enclosure_remove_device
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x5734b60d	enclosure_unregister
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x5b7acf66	enclosure_register
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0x5effb69e	enclosure_find
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xc0412456	enclosure_component_register
+EXPORT_SYMBOL_GPL drivers/misc/enclosure 0xc0ad19d0	enclosure_for_each_device
 EXPORT_SYMBOL_GPL drivers/misc/lis3lv02d/lis3lv02d 0x2b93f4cf	lis3lv02d_joystick_enable
 EXPORT_SYMBOL_GPL drivers/misc/lis3lv02d/lis3lv02d 0x4bc5e4a9	lis3lv02d_joystick_disable
 EXPORT_SYMBOL_GPL drivers/misc/lis3lv02d/lis3lv02d 0x5463cd73	lis3lv02d_remove_fs
