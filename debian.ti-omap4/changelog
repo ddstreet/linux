@@ -1,3 +1,13 @@
+linux-ti-omap4 (3.2.0-1479.105) precise; urgency=low
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1555918
+  * No change upload to fix changelog
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 11 Mar 2016 15:36:10 +0000
+
 linux-ti-omap4 (3.2.0-1479.104) precise; urgency=low
 
   [ Florian Westphal ]
