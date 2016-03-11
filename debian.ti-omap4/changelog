@@ -6,6 +6,15 @@ linux-ti-omap4 (3.2.0-1479.104) UNRELEASED; urgency=low
 
  -- Brad Figg <brad.figg@canonical.com>  Thu, 10 Mar 2016 17:06:37 -0800
 
+linux-ti-omap4 (3.2.0-1478.104) precise; urgency=low
+
+  [ Brad Figg ]
+  * Release Tracking Bug
+    - LP: #1548505
+  * rebased to Ubuntu-3.2.0-100.140
+
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 29 Feb 2016 11:12:12 -0800
+
 linux-ti-omap4 (3.2.0-1478.103) precise; urgency=low
 
   [ Brad Figg ]
