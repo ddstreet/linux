@@ -1,9 +1,24 @@
-linux-lts-trusty (3.13.0-82.126~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-83.127~precise1) precise; urgency=low
 
   [ Brad Figg ]
 
   * Release Tracking Bug
-    - LP: #1554918
+    - LP: #1555958
+
+  [ Florian Westphal ]
+
+  * SAUCE: [nf,v2] netfilter: x_tables: don't rely on well-behaving
+    userspace
+    - LP: #1555338
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 11 Mar 2016 12:07:04 +0000
+
+linux (3.13.0-82.126) trusty; urgency=low
+
+  [ Brad Figg ]
+
+  * Release Tracking Bug
+    - LP: #1554732
 
   [ Upstream Kernel Changes ]
 
