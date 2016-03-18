@@ -1,9 +1,23 @@
-linux-lts-trusty (3.13.0-84.128~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-85.129~precise1) precise; urgency=low
 
   [ Brad Figg ]
 
   * Release Tracking Bug
-    - LP: #1557842
+    - LP: #1558891
+
+  [ Upstream Kernel Changes ]
+
+  * Revert "Revert "af_unix: Revert 'lock_interruptible' in stream receive
+    code""
+
+ -- Brad Figg <brad.figg@canonical.com>  Thu, 17 Mar 2016 11:42:09 -0700
+
+linux (3.13.0-84.128) trusty; urgency=low
+
+  [ Brad Figg ]
+
+  * Release Tracking Bug
+    - LP: #1557596
 
   [ Upstream Kernel Changes ]
 
