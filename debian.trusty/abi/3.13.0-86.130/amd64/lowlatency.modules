@@ -415,6 +415,7 @@ bluecard_cs
 bluetooth
 bma150
 bma180
+bmp085
 bmp085-i2c
 bmp085-spi
 bna
