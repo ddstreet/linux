@@ -1419,7 +1419,6 @@ i7300_edac
 i7300_idle
 i740fb
 i7core_edac
-i810
 i82092
 i82975x_edac
 i8k
@@ -2359,7 +2358,6 @@ ov9640
 ov9740
 overlayfs
 oxu210hp-hcd
-ozwpan
 p4-clockmod
 p54common
 p54pci
