@@ -1,4 +1,18 @@
-linux-lts-trusty (3.13.0-87.132~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-87.133~precise1) precise; urgency=low
+
+  [ Kamal Mostafa ]
+
+  * Release Tracking Bug
+    - LP: #1585440
+
+  [ Upstream Kernel Changes ]
+
+  * Revert "usb: hub: do not clear BOS field during reset device"
+    - LP: #1582864
+
+ -- Kamal Mostafa <kamal@canonical.com>  Tue, 24 May 2016 11:04:30 -0700
+
+linux (3.13.0-87.132) trusty; urgency=low
 
   [ Kamal Mostafa ]
 
