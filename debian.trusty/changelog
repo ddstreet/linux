@@ -1,4 +1,15 @@
-linux-lts-trusty (3.13.0-87.133~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-88.135~precise1) precise; urgency=low
+
+  [ Kamal Mostafa ]
+
+  * CVE-2016-1583 (LP: #1588871)
+    - ecryptfs: fix handling of directory opening
+    - SAUCE: proc: prevent stacking filesystems on top
+    - SAUCE: ecryptfs: forbid opening files without mmap handler
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 09 Jun 2016 09:05:50 +0100
+
+linux (3.13.0-87.133) trusty; urgency=low
 
   [ Kamal Mostafa ]
 
