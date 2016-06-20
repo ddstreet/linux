@@ -102,6 +102,12 @@ rsync -av --delete ${DEBIAN_SOURCE}/d-i/ ${DEBIAN_TARGET}/d-i
 # Update configs from master
 #
 rsync -av --delete ${DEBIAN_SOURCE}/config/ ${DEBIAN_TARGET}/config
+
+#
+# Make sure signed module enforcement stays off until user space is ready.
+#
+sed -i 's/CONFIG_EFI_SECURE_BOOT_SIG_ENFORCE=y/CONFIG_EFI_SECURE_BOOT_SIG_ENFORCE=n/' ${DEBIAN_TARGET}/config/config.common.ubuntu
+
 #
 # Build in these 2 modules for arm in order to avoid
 # a missing __aeabi_uldivmod symbol.
