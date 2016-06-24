@@ -1,9 +1,78 @@
-linux-lts-trusty (3.13.0-89.136~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-91.138~precise1) precise; urgency=medium
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1596012
+
+  [ Upstream Kernel Changes ]
+
+  * netfilter: x_tables: validate e->target_offset early
+    - LP: #1555338
+    - CVE-2016-3134
+  * netfilter: x_tables: make sure e->next_offset covers remaining blob
+    size
+    - LP: #1555338
+    - CVE-2016-3134
+  * netfilter: x_tables: fix unconditional helper
+    - LP: #1555338
+    - CVE-2016-3134
+  * netfilter: x_tables: don't move to non-existent next rule
+    - LP: #1595350
+  * netfilter: x_tables: validate targets of jumps
+    - LP: #1595350
+  * netfilter: x_tables: add and use xt_check_entry_offsets
+    - LP: #1595350
+  * netfilter: x_tables: kill check_entry helper
+    - LP: #1595350
+  * netfilter: x_tables: assert minimum target size
+    - LP: #1595350
+  * netfilter: x_tables: add compat version of xt_check_entry_offsets
+    - LP: #1595350
+  * netfilter: x_tables: check standard target size too
+    - LP: #1595350
+  * netfilter: x_tables: check for bogus target offset
+    - LP: #1595350
+  * netfilter: x_tables: validate all offsets and sizes in a rule
+    - LP: #1595350
+  * netfilter: x_tables: don't reject valid target size on some
+    architectures
+    - LP: #1595350
+  * netfilter: arp_tables: simplify translate_compat_table args
+    - LP: #1595350
+  * netfilter: ip_tables: simplify translate_compat_table args
+    - LP: #1595350
+  * netfilter: ip6_tables: simplify translate_compat_table args
+    - LP: #1595350
+  * netfilter: x_tables: xt_compat_match_from_user doesn't need a retval
+    - LP: #1595350
+  * netfilter: x_tables: do compat validation via translate_table
+    - LP: #1595350
+  * netfilter: x_tables: introduce and use xt_copy_counters_from_user
+    - LP: #1595350
+
+ -- Kamal Mostafa <kamal@canonical.com>  Fri, 24 Jun 2016 11:32:52 -0700
+
+linux (3.13.0-90.137) trusty; urgency=low
 
   [ Kamal Mostafa ]
 
   * Release Tracking Bug
-    - LP: #1591433
+    - LP: #1595693
+
+  [ Serge Hallyn ]
+
+  * SAUCE: add a sysctl to disable unprivileged user namespace unsharing
+    - LP: #1555338, #1595350
+
+ -- Kamal Mostafa <kamal@canonical.com>  Thu, 23 Jun 2016 13:10:53 -0700
+
+linux (3.13.0-89.136) trusty; urgency=low
+
+  [ Kamal Mostafa ]
+
+  * Release Tracking Bug
+    - LP: #1591315
 
   [ Kamal Mostafa ]
 
