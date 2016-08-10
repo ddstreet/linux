@@ -1,9 +1,34 @@
-linux-lts-trusty (3.13.0-93.140~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-94.141~precise1) precise; urgency=low
+
+  [ Stefan Bader ]
+
+  * Release Tracking Bug
+    - LP: #1611290
+
+  * CVE-2016-5828
+    - powerpc/tm: Always reclaim in start_thread() for exec() class syscalls
+
+  * CVE-2016-5829
+    - HID: hiddev: validate num_values for HIDIOCGUSAGES, HIDIOCSUSAGES commands
+
+  * changelog: add CVEs as first class citizens (LP: #1604344)
+    - use CVE numbers in changelog
+    - avoid duplicate CVE numbers in changelog
+
+  * CVE-2016-5728
+    - misc: mic: Fix for double fetch security bug in VOP driver
+
+  * CVE-2016-5244 (LP: #1589041)
+    - rds: fix an infoleak in rds_inc_info_copy
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 10 Aug 2016 12:01:28 +0200
+
+linux (3.13.0-93.140) trusty; urgency=low
 
   [ Seth Forshee ]
 
   * Release Tracking Bug
-    - LP: #1604139
+    - LP: #1604134
 
   * Boot failure with EFI stub (LP: #1603476)
     - x86/efi: Fix boot failure with EFI stub
@@ -39,7 +64,7 @@ linux-lts-trusty (3.13.0-93.140~precise1) precise; urgency=low
   * Miscellaneous upstream changes
     - KEYS: potential uninitialized variable
 
- -- Seth Forshee <seth.forshee@canonical.com>  Tue, 19 Jul 2016 13:47:36 -0500
+ -- Seth Forshee <seth.forshee@canonical.com>  Mon, 18 Jul 2016 15:05:56 -0500
 
 linux (3.13.0-92.139) trusty; urgency=low
 
