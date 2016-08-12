@@ -1,9 +1,21 @@
-linux-lts-trusty (3.13.0-94.141~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-95.142~precise1) precise; urgency=low
 
   [ Stefan Bader ]
 
   * Release Tracking Bug
-    - LP: #1611290
+    - LP: #1612718
+
+  * CVE-2016-5696
+    - tcp: make challenge acks less predictable
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Fri, 12 Aug 2016 19:10:12 +0200
+
+linux (3.13.0-94.141) trusty; urgency=low
+
+  [ Stefan Bader ]
+
+  * Release Tracking Bug
+    - LP: #1611281
 
   * CVE-2016-5828
     - powerpc/tm: Always reclaim in start_thread() for exec() class syscalls
@@ -21,7 +33,7 @@ linux-lts-trusty (3.13.0-94.141~precise1) precise; urgency=low
   * CVE-2016-5244 (LP: #1589041)
     - rds: fix an infoleak in rds_inc_info_copy
 
- -- Stefan Bader <stefan.bader@canonical.com>  Wed, 10 Aug 2016 12:01:28 +0200
+ -- Stefan Bader <stefan.bader@canonical.com>  Tue, 09 Aug 2016 10:44:14 +0200
 
 linux (3.13.0-93.140) trusty; urgency=low
 
