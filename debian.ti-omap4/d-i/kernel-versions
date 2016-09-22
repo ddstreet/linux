@@ -1,0 +1,4 @@
+# arch	version		flavour		installedname			suffix	bdep
+armel	3.2.0-1489	omap4		3.2.0-1489-omap4		-
+
+armhf	3.2.0-1489	omap4		3.2.0-1489-omap4		-
