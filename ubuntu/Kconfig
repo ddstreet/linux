@@ -37,6 +37,10 @@ source "ubuntu/bnxt/Kconfig"
 ##
 ##
 ##
+source "ubuntu/ixgbevf-2.14.2/Kconfig"
+##
+##
+##
 ##
 ##
 ##
