@@ -1,9 +1,19 @@
-linux-lts-trusty (3.13.0-97.144~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-98.145~precise1) precise; urgency=low
+
+  * Fix GRO recursion overflow for tunneling protocols (LP: #1631287)
+    - tunnels: Don't apply GRO to multiple layers of encapsulation.
+
+  * CVE-2016-7039
+    - SAUCE: net: add recursion limit to GRO
+
+ -- Seth Forshee <seth.forshee@canonical.com>  Fri, 07 Oct 2016 20:08:32 -0500
+
+linux (3.13.0-97.144) trusty; urgency=low
 
   [ Joseph Salisbury ]
 
   * Release Tracking Bug
-    - LP: #1626613
+    - LP: #1626604
 
   * Altering use_tempaddr drops all IPv6 addresses (LP: #994931)
     - Revert "UBUNTU: SAUCE: (no-up) ipv6: Fix net.ipv6.conf.all.use_tempaddr
