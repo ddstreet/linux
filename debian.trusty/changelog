@@ -1,4 +1,11 @@
-linux-lts-trusty (3.13.0-98.145~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-100.147~precise1) precise; urgency=low
+
+  * CVE-2016-5195
+    - SAUCE: mm: remove gup_flags FOLL_WRITE games from __get_user_pages()
+
+ -- Seth Forshee <seth.forshee@canonical.com>  Tue, 18 Oct 2016 16:50:28 -0500
+
+linux (3.13.0-98.145) trusty; urgency=low
 
   * Fix GRO recursion overflow for tunneling protocols (LP: #1631287)
     - tunnels: Don't apply GRO to multiple layers of encapsulation.
