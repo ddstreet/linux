@@ -1,9 +1,37 @@
-linux-lts-trusty (3.13.0-106.153~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-107.154~precise1) precise; urgency=low
 
   [ Luis Henriques ]
 
   * Release Tracking Bug
-    - LP: #1647755
+    - LP: #1651204
+
+  * CVE-2016-9756
+    - KVM: x86: drop error recovery in em_jmp_far and em_ret_far
+
+  * CVE-2016-9806
+    - netlink: Fix dump skb leak/double free
+
+  * CVE-2016-9794
+    - ALSA: pcm : Call kill_fasync() in stream lock
+
+  * export nvme drive model/serial strings via sysfs (trusty) (LP: #1649635)
+    - NVMe: Export NVMe attributes to sysfs group
+
+  * CVE-2016-9793
+    - net: avoid signed overflows for SO_{SND|RCV}BUFFORCE
+
+  * Ubuntu16.10 - EEH on BELL3 adapter fails to recover (serial/tty)
+    (LP: #1646857)
+    - serial: 8250_pci: Detach low-level driver during PCI error recovery
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 20 Dec 2016 10:04:58 +0000
+
+linux (3.13.0-106.153) trusty; urgency=low
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1647749
 
   * CVE-2016-7916
     - proc: prevent accessing /proc/<PID>/environ until it's ready
@@ -32,7 +60,7 @@ linux-lts-trusty (3.13.0-106.153~precise1) precise; urgency=low
   * move nvme driver to linux-image (LP: #1640275)
     - [Config] Add nvme to the generic inclusion list
 
- -- Luis Henriques <luis.henriques@canonical.com>  Tue, 06 Dec 2016 15:50:24 +0000
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 06 Dec 2016 15:00:27 +0000
 
 linux (3.13.0-105.152) trusty; urgency=low
 
