@@ -1,4 +1,18 @@
-linux-lts-trusty (3.13.0-107.154~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-108.155~precise1) precise; urgency=low
+
+  [ John Donnelly ]
+
+  * Release Tracking Bug
+    - LP: #1655480
+
+  [ John Donnelly ]
+
+  * CVE-2016-9555
+    - sctp: validate chunk len before actually using it
+
+ -- John Donnelly <john.donnelly@canonical.com>  Thu, 12 Jan 2017 08:22:42 +0000
+
+linux (3.13.0-107.154) trusty; urgency=low
 
   [ Luis Henriques ]
 
