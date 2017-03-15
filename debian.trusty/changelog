@@ -1,6 +1,16 @@
-linux-lts-trusty (3.13.0-113.160~precise1) precise; urgency=low
+linux-lts-trusty (3.13.0-114.161~precise1) precise; urgency=low
 
-  * linux-lts-trusty: 3.13.0-113.160~precise1 -proposed tracker (LP: #1671459)
+  * linux-lts-trusty: 3.13.0-114.161~precise1 -proposed tracker (LP: #1673211)
+
+  * lsattr 32bit does not work on 64bit kernel (Inappropriate ioctl error)
+    (LP: #1619918)
+    - btrfs: fix btrfs_compat_ioctl failures on non-compat ioctls
+
+ -- Thadeu Lima de Souza Cascardo <cascardo@canonical.com>  Wed, 15 Mar 2017 14:00:47 -0300
+
+linux (3.13.0-113.160) trusty; urgency=low
+
+  * linux: 3.13.0-113.160 -proposed tracker (LP: #1671232)
 
   * Windows guest got 0x5c BSOD when rebooting (LP: #1660519)
     - KVM: x86: reset RVI upon system reset
