@@ -8280,6 +8280,7 @@ EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x4d6890c3	vmbus_sendpacket_mpb_desc
 EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x684a67af	vmbus_setevent
 EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x7e437e9b	vmbus_close
 EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x8171144d	vmbus_teardown_gpadl
+EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x86ff5fa6	hyperv_cs
 EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x89d4073b	vmbus_set_chn_rescind_callback
 EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x93fbd6ba	vmbus_establish_gpadl
 EXPORT_SYMBOL_GPL drivers/hv/hv_vmbus 0x9f14755a	vmbus_set_event
