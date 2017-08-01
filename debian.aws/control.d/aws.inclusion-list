@@ -102,6 +102,7 @@ drivers/scsi/osd/osd.ko
 drivers/scsi/osd/libosd.ko
 drivers/scsi/qla1280.ko
 drivers/scsi/raid_class.ko
+drivers/scsi/scsi_debug.ko
 drivers/scsi/scsi_transport_fc.ko
 drivers/scsi/scsi_transport_iscsi.ko
 drivers/scsi/scsi_transport_sas.ko
