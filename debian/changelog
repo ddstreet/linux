@@ -1,12 +1,3 @@
-linux (4.4.0-97.120+hf147309v20170926b1) xenial; urgency=medium
-
-  [ Dan Streetman ]
-
-  * HOTFIX: test fix for i40e
-    - ESCALATION: #147309
-
- -- Dan Streetman <dan.streetman@canonical.com>  Tue, 26 Sep 2017 16:54:00 -0400
-
 linux (4.4.0-97.120) xenial; urgency=low
 
   * linux: 4.4.0-97.120 -proposed tracker (LP: #1718149)
