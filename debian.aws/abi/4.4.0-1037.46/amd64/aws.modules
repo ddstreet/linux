@@ -160,6 +160,7 @@ dm-verity
 dm-zero
 dmfe
 dn_rtmsg
+drbd
 drbg
 drm
 drm_kms_helper
